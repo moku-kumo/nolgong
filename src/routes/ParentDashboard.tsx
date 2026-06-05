@@ -99,7 +99,7 @@ export default function ParentDashboard() {
             </div>
           </div>
           <h2 className="text-xl font-bold text-center text-gray-900 mb-1">부모 인증</h2>
-          <p className="text-center text-sm text-gray-400 mb-6">PIN을 입력해주세요</p>
+          <p className="text-center text-sm text-gray-400 mb-6">PIN을 입력해주세요 (초기: 0000)</p>
           {error && <p className="text-center text-rose-500 text-sm mb-3">PIN이 틀렸어요!</p>}
           <input
             type="password"
