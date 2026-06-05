@@ -3,6 +3,7 @@ import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
+import { useSpeech } from '@/hooks/useSpeech'
 import { BookOpen } from 'lucide-react'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { dictionary, type DictEntry } from '@/data/dictionary'
@@ -33,6 +34,7 @@ function generateProblem(wordLength: string, lastWord?: string) {
 export default function ReadWord() {
   const { timerEnabled, timerSeconds, soundEnabled, koreanSettings } = useSettingsStore()
   const { score, total, addCorrect, addWrong } = useScore('korean/word')
+  const { speak } = useSpeech()
   const lastWordRef = useRef<string | undefined>(undefined)
   const [problem, setProblem] = useState(() => generateProblem(koreanSettings.wordLength))
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
@@ -82,8 +84,14 @@ export default function ReadWord() {
       onTimeUp={handleTimeUp}
     >
       <div className="text-center mb-4">
-        <div className="text-8xl mb-2">{problem.correct.emoji}</div>
-        <p className="text-gray-400 text-sm">이 그림의 이름을 찾아요!</p>
+        <button
+          onClick={() => speak(problem.correct.ko, 'ko-KR')}
+          className="text-8xl mb-2 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+          aria-label="발음 듣기"
+        >
+          {problem.correct.emoji}
+        </button>
+        <p className="text-gray-400 text-sm">그림을 누르면 발음을 들을 수 있어요!</p>
       </div>
 
       {feedback ? (
