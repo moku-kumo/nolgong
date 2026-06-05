@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+:root {
+  color-scheme: light only;
+}
 @import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
