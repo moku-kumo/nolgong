@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Navigation, Star, Trophy, Clock } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playCorrect } from '@/lib/audio'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -234,23 +234,31 @@ export default function MazeFinder() {
   const isActive = phase === 'playing' || phase === 'levelup'
 
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-purple-50 to-indigo-50 flex flex-col p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="min-h-dvh bg-gradient-to-br from-purple-50 via-indigo-50/30 to-slate-50 flex flex-col p-4 pt-[max(1rem,env(safe-area-inset-top))]">
       {/* 상단 */}
-      <Link to="/game" className="inline-flex items-center gap-1 text-purple-500 hover:text-purple-700 mb-2">
-        <ChevronLeft size={20} /> 게임 홈
-      </Link>
-      <h1 className="text-3xl font-bold text-purple-700 text-center mb-2">🌀 미로찾기</h1>
+      <header className="flex items-center justify-between mb-3">
+        <Link to="/game" className="p-2.5 -ml-2 rounded-xl hover:bg-gray-100/80 transition-colors">
+          <ChevronLeft size={20} className="text-gray-500" />
+        </Link>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-sm">
+            <Navigation size={14} className="text-white" strokeWidth={2.5} />
+          </div>
+          <h1 className="text-[17px] font-bold text-gray-900">미로찾기</h1>
+        </div>
+        <div className="w-8" />
+      </header>
 
       {/* 점수 / 타이머 */}
       {isActive && (
         <div className="flex justify-between items-center max-w-sm mx-auto w-full mb-3 gap-2">
-          <div className="flex-1 bg-white rounded-xl px-3 py-2 shadow text-center text-sm font-bold text-yellow-600">
-            ⭐ {score}점
+          <div className="flex items-center gap-1.5 bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100 text-sm font-bold text-orange-600">
+            <Star size={14} className="text-orange-500" fill="currentColor" /> {score}점
           </div>
-          <div className={`flex-1 rounded-xl px-3 py-2 shadow text-center text-sm font-bold transition-colors ${timeLeft <= 10 ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-white text-blue-600'}`}>
-            ⏱ {timeLeft}초
+          <div className={`flex items-center gap-1.5 rounded-xl px-3 py-2 shadow-sm border text-sm font-bold transition-colors ${timeLeft <= 10 ? 'bg-rose-50 border-rose-200 text-rose-600 animate-pulse' : 'bg-white border-gray-100 text-indigo-600'}`}>
+            <Clock size={14} /> {timeLeft}초
           </div>
-          <div className="flex-1 bg-white rounded-xl px-3 py-2 shadow text-center text-xs font-bold text-gray-500">
+          <div className="bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100 text-center text-xs font-bold text-gray-500">
             {LEVELS[level].label}
           </div>
         </div>
@@ -265,9 +273,11 @@ export default function MazeFinder() {
             initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             className="text-center px-4"
           >
-            <div className="text-7xl mb-4">🌀</div>
+            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+              <Navigation size={36} className="text-white" />
+            </div>
             <h2 className="text-2xl font-bold text-purple-700 mb-2">미로를 탈출하라!</h2>
-            <p className="text-gray-500 mb-1">🐭 쥐를 출구 🏁 까지 이동시키세요</p>
+            <p className="text-gray-500 mb-1">쥐를 출구까지 이동시키세요</p>
             <p className="text-gray-400 text-sm mb-1">방향키 / WASD · 화면 스와이프 · 버튼</p>
             <p className="text-gray-400 text-sm mb-6">빨리 클리어할수록 보너스 점수!</p>
             <div className="flex gap-2 justify-center text-sm text-gray-400 mb-6">
@@ -279,9 +289,9 @@ export default function MazeFinder() {
             </div>
             <button
               onClick={handleStart}
-              className="px-10 py-4 bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white text-xl font-bold rounded-2xl shadow-lg transition-colors"
+              className="px-10 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-xl font-bold rounded-2xl shadow-lg shadow-purple-500/25 transition-all"
             >
-              시작하기 🚀
+              시작하기
             </button>
           </motion.div>
         )}
@@ -352,27 +362,29 @@ export default function MazeFinder() {
         {phase === 'done' && (
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            className="text-center p-8 bg-white rounded-3xl shadow-xl max-w-sm w-full mx-4"
+            className="text-center p-8 bg-white rounded-2xl shadow-lg border border-gray-100 max-w-sm w-full mx-4"
           >
-            <div className="text-6xl mb-3">{won ? '🎉' : '😢'}</div>
-            <h2 className="text-2xl font-bold text-purple-700 mb-1">
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${won ? 'from-emerald-400 to-green-500' : 'from-rose-400 to-red-500'} flex items-center justify-center shadow-md`}>
+              <Trophy size={28} className="text-white" />
+            </div>
+            <h2 className={`text-2xl font-bold mb-1 ${won ? 'text-emerald-600' : 'text-rose-600'}`}>
               {won ? '완전 클리어!' : '시간 초과!'}
             </h2>
             <p className="text-gray-400 text-sm mb-3">
-              {won ? '모든 미로를 탈출했어요! 대단해요!' : '아쉬워요, 다시 도전해봐요!'}
+              {won ? '모든 미로를 탈출했어요!' : '아쉬워요, 다시 도전해봐요!'}
             </p>
-            <div className="text-5xl font-bold text-yellow-500 mb-1">{score}점</div>
+            <div className="text-4xl font-bold text-orange-500 mb-1">{score}점</div>
             <p className="text-gray-300 text-xs mb-6">남은 시간 × 10점</p>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={handleStart}
-                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl shadow transition-colors"
+                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md shadow-purple-500/25 transition-all"
               >
-                다시하기 🔄
+                다시하기
               </button>
               <Link
                 to="/game"
-                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl shadow transition-colors"
+                className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl transition-colors"
               >
                 게임 홈
               </Link>

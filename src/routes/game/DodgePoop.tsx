@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Bomb, Star, Trophy, AlertTriangle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useGameTimer } from '@/hooks/useGameTimer'
@@ -259,51 +259,61 @@ export default function DodgePoop() {
   }, [])
 
   return (
-    <div className="min-h-dvh flex flex-col bg-gradient-to-b from-amber-50 to-orange-100 p-4 pt-[max(1rem,env(safe-area-inset-top))] overflow-hidden">
+    <div className="min-h-dvh flex flex-col bg-gradient-to-b from-amber-50 via-orange-50/30 to-slate-50 p-4 pt-[max(1rem,env(safe-area-inset-top))] overflow-hidden">
       <header className="flex items-center justify-between mb-2">
-        <Link to="/game" className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700">
-          <ChevronLeft size={20} /> 게임
+        <Link to="/game" className="p-2.5 -ml-2 rounded-xl hover:bg-gray-100/80 transition-colors">
+          <ChevronLeft size={20} className="text-gray-500" />
         </Link>
-        <h2 className="text-xl font-bold text-gray-700">💩 똥 피하기</h2>
-        <div className="text-lg font-bold text-orange-500">⭐ {score}</div>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+            <Bomb size={14} className="text-white" strokeWidth={2.5} />
+          </div>
+          <h2 className="text-[17px] font-bold text-gray-900">똥 피하기</h2>
+        </div>
+        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200/60">
+          <Star size={14} className="text-orange-500" fill="currentColor" />
+          <span className="text-sm font-bold text-orange-600">{score}</span>
+        </div>
       </header>
 
       {!started || finished ? (
         <main className="flex-1 flex flex-col items-center justify-center gap-6">
           {finished && (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="text-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
             >
-              <div className="text-6xl mb-2">{hit ? '💥' : '🎉'}</div>
-              <p className="text-3xl font-bold text-gray-700">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${hit ? 'from-rose-400 to-red-500' : 'from-amber-400 to-orange-500'} flex items-center justify-center shadow-md`}>
+                {hit ? <AlertTriangle size={28} className="text-white" /> : <Trophy size={28} className="text-white" />}
+              </div>
+              <p className="text-3xl font-bold text-gray-800">
                 {hit ? '으악! 맞았다!' : `${score}개 피했어요!`}
               </p>
-              <p className="text-xl text-gray-500 mt-2">⭐ {score}점</p>
+              <p className="text-gray-500 mt-1">{score}점</p>
             </motion.div>
           )}
           <button
             onClick={start}
-            className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl text-2xl font-bold shadow-lg transition-colors"
+            className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white rounded-2xl text-xl font-bold shadow-lg shadow-amber-500/25 transition-all"
           >
             {finished ? '다시 하기' : '시작!'}
           </button>
           {!finished && (
             <p className="text-gray-400 text-sm text-center">
-              손가락을 드래그해서<br />💩를 피하세요!
+              손가락을 드래그해서<br />피하세요!
             </p>
           )}
         </main>
       ) : (
         <>
-          <div className="w-full max-w-xs mx-auto bg-amber-200 rounded-full h-3 overflow-hidden">
+          <div className="w-full max-w-xs mx-auto bg-gray-100 rounded-full h-2.5 overflow-hidden">
             <div
-              className="h-full bg-amber-500 transition-all duration-1000"
+              className="h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-1000 rounded-full"
               style={{ width: `${(timeLeft / GAME_TIME) * 100}%` }}
             />
           </div>
-          <p className="text-center text-gray-500 text-sm mt-1">{timeLeft}초</p>
+          <p className="text-center text-gray-400 text-sm mt-1 font-medium">{timeLeft}초</p>
 
           <div
             ref={areaRef}

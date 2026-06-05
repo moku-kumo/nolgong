@@ -4,13 +4,7 @@ import { ChevronLeft, Lock, Clock, Unlock, Target, Bomb, Search, Navigation, Bik
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStudyTimeStore, getTodaySeconds, isGameUnlocked, canPlayGame, getRemainingGameSeconds, isTimeLimitOff, getRequiredStudySeconds } from '@/stores/studyTimeStore'
 import SubjectCard from '@/components/SubjectCard'
-import { randInt } from '@/lib/random'
-
-function genMathProblem() {
-  const a = randInt(2, 9)
-  const b = randInt(2, 9)
-  return { a, b, answer: a * b }
-}
+import { useSettingsStore } from '@/stores/settingsStore'
 
 const games = [
   { to: '/game/whack', icon: Target, label: '두더지잡기', desc: '빠르게 터치!', gradient: 'bg-gradient-to-br from-orange-400 to-red-500', iconColor: 'text-white' },
@@ -37,29 +31,27 @@ export default function GameHome() {
   const remMins = Math.floor(remainingGame / 60)
   const remSecs = remainingGame % 60
 
-  // 곱하기 문제 모달
-  const [showMath, setShowMath] = useState(false)
-  const [mathProblem, setMathProblem] = useState(() => genMathProblem())
-  const [mathAnswer, setMathAnswer] = useState('')
-  const [mathError, setMathError] = useState(false)
+  // PIN 인증 모달
+  const [showPin, setShowPin] = useState(false)
+  const [pinInput, setPinInput] = useState('')
+  const [pinError, setPinError] = useState(false)
+  const parentPin = useSettingsStore(s => s.parentPin)
 
-  const openMathModal = useCallback(() => {
-    setMathProblem(genMathProblem())
-    setMathAnswer('')
-    setMathError(false)
-    setShowMath(true)
+  const openPinModal = useCallback(() => {
+    setPinInput('')
+    setPinError(false)
+    setShowPin(true)
   }, [])
 
-  const checkMathAnswer = useCallback(() => {
-    if (Number(mathAnswer) === mathProblem.answer) {
+  const checkPin = useCallback(() => {
+    if (pinInput === parentPin) {
       setTimeLimitOff()
-      setShowMath(false)
+      setShowPin(false)
     } else {
-      setMathError(true)
-      setMathProblem(genMathProblem())
-      setMathAnswer('')
+      setPinError(true)
+      setPinInput('')
     }
-  }, [mathAnswer, mathProblem.answer, setTimeLimitOff])
+  }, [pinInput, parentPin, setTimeLimitOff])
 
   return (
     <div className="min-h-dvh bg-gradient-to-br from-orange-50 via-rose-50/30 to-slate-50">
@@ -128,10 +120,10 @@ export default function GameHome() {
         ) : null}
         {!timeLimitOff && (
           <button
-            onClick={openMathModal}
+            onClick={openPinModal}
             className="mt-3 px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold text-sm transition-all shadow-md shadow-indigo-500/25"
           >
-            곱하기 문제 풀고 시간제한 해제
+            PIN 입력하고 시간제한 해제
           </button>
         )}
       </div>
@@ -156,13 +148,13 @@ export default function GameHome() {
       </div>
       </main>
 
-      {/* 곱하기 문제 모달 */}
+      {/* PIN 인증 모달 */}
       <AnimatePresence>
-        {showMath && (
+        {showPin && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={() => setShowMath(false)}
+            onClick={() => setShowPin(false)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 10 }}
@@ -170,32 +162,30 @@ export default function GameHome() {
               onClick={e => e.stopPropagation()}
             >
               <h3 className="text-lg font-bold text-center text-gray-900 mb-1">시간제한 해제</h3>
-              <p className="text-center text-sm text-gray-400 mb-6">곱하기 문제를 맞히면 해제돼요</p>
-              <p className="text-4xl font-bold text-center text-gray-800 mb-6">
-                {mathProblem.a} × {mathProblem.b} = ?
-              </p>
-              {mathError && (
-                <p className="text-center text-rose-500 text-sm mb-3">틀렸어요! 다시 풀어보세요</p>
+              <p className="text-center text-sm text-gray-400 mb-6">부모 PIN을 입력해주세요</p>
+              {pinError && (
+                <p className="text-center text-rose-500 text-sm mb-3">PIN이 틀렸어요!</p>
               )}
               <input
-                type="number"
+                type="password"
                 inputMode="numeric"
-                value={mathAnswer}
-                onChange={e => { setMathAnswer(e.target.value); setMathError(false) }}
-                onKeyDown={e => e.key === 'Enter' && checkMathAnswer()}
-                placeholder="답을 입력하세요"
-                className="w-full text-center text-2xl font-bold border-2 border-gray-200 rounded-xl py-3 mb-4 focus:border-indigo-500 focus:outline-none transition-colors"
+                maxLength={10}
+                value={pinInput}
+                onChange={e => { setPinInput(e.target.value); setPinError(false) }}
+                onKeyDown={e => e.key === 'Enter' && checkPin()}
+                placeholder="PIN 입력"
+                className="w-full text-center text-2xl font-bold border-2 border-gray-200 rounded-xl py-3 mb-4 focus:border-indigo-500 focus:outline-none transition-colors tracking-[0.3em]"
                 autoFocus
               />
               <div className="flex gap-3">
                 <button
-                  onClick={() => setShowMath(false)}
+                  onClick={() => setShowPin(false)}
                   className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl font-bold text-gray-600 transition-colors"
                 >
                   취소
                 </button>
                 <button
-                  onClick={checkMathAnswer}
+                  onClick={checkPin}
                   className="flex-1 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-bold transition-all shadow-md shadow-indigo-500/25"
                 >
                   확인

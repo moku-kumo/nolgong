@@ -4,13 +4,7 @@ import { ChevronLeft, Calendar, Target, Clock, TrendingUp, Lock } from 'lucide-r
 import { motion } from 'framer-motion'
 import { useStatsStore, getSessionsByDate, getRecentDays, MODE_NAMES, type SessionRecord } from '@/stores/statsStore'
 import { useStudyTimeStore } from '@/stores/studyTimeStore'
-import { randInt } from '@/lib/random'
-
-function genMathProblem() {
-  const a = randInt(2, 9)
-  const b = randInt(2, 9)
-  return { a, b, answer: a * b }
-}
+import { useSettingsStore } from '@/stores/settingsStore'
 
 function DaySummary({ date, sessions }: { date: string; sessions: SessionRecord[] }) {
   const totalCorrect = sessions.reduce((s, r) => s + r.correct, 0)
@@ -67,19 +61,18 @@ export default function ParentDashboard() {
   const dailySeconds = useStudyTimeStore(s => s.dailySeconds)
 
   const [authed, setAuthed] = useState(false)
-  const [problem, setProblem] = useState(() => genMathProblem())
-  const [answer, setAnswer] = useState('')
+  const [pinInput, setPinInput] = useState('')
   const [error, setError] = useState(false)
+  const parentPin = useSettingsStore(s => s.parentPin)
 
   const checkAnswer = useCallback(() => {
-    if (Number(answer) === problem.answer) {
+    if (pinInput === parentPin) {
       setAuthed(true)
     } else {
       setError(true)
-      setProblem(genMathProblem())
-      setAnswer('')
+      setPinInput('')
     }
-  }, [answer, problem.answer])
+  }, [pinInput, parentPin])
 
   const days = getRecentDays(7)
   const weekSessions = days.flatMap(d => getSessionsByDate(sessions, d))
@@ -106,19 +99,17 @@ export default function ParentDashboard() {
             </div>
           </div>
           <h2 className="text-xl font-bold text-center text-gray-900 mb-1">부모 인증</h2>
-          <p className="text-center text-sm text-gray-400 mb-6">곱하기 문제를 풀어주세요</p>
-          <p className="text-4xl font-bold text-center text-gray-800 mb-6">
-            {problem.a} × {problem.b} = ?
-          </p>
-          {error && <p className="text-center text-rose-500 text-sm mb-3">틀렸어요! 다시 풀어보세요</p>}
+          <p className="text-center text-sm text-gray-400 mb-6">PIN을 입력해주세요</p>
+          {error && <p className="text-center text-rose-500 text-sm mb-3">PIN이 틀렸어요!</p>}
           <input
-            type="number"
+            type="password"
             inputMode="numeric"
-            value={answer}
-            onChange={e => { setAnswer(e.target.value); setError(false) }}
+            maxLength={10}
+            value={pinInput}
+            onChange={e => { setPinInput(e.target.value); setError(false) }}
             onKeyDown={e => e.key === 'Enter' && checkAnswer()}
-            placeholder="답을 입력하세요"
-            className="w-full text-center text-2xl font-bold border-2 border-gray-200 rounded-xl py-3 mb-4 focus:border-indigo-500 focus:outline-none transition-colors"
+            placeholder="PIN 입력"
+            className="w-full text-center text-2xl font-bold border-2 border-gray-200 rounded-xl py-3 mb-4 focus:border-indigo-500 focus:outline-none transition-colors tracking-[0.3em]"
             autoFocus
           />
           <button
@@ -180,6 +171,22 @@ export default function ParentDashboard() {
         {sessions.length === 0 && (
           <p className="text-center text-gray-400 mt-8">아직 학습 기록이 없어요</p>
         )}
+
+        {/* PIN 변경 */}
+        <div className="mt-8 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <h3 className="text-sm font-bold text-gray-700 mb-3">부모 PIN 변경</h3>
+          <div className="flex items-center gap-3">
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={10}
+              value={parentPin}
+              onChange={(e) => useSettingsStore.getState().setParentPin(e.target.value)}
+              className="flex-1 text-center text-lg font-bold border-2 border-gray-200 rounded-xl py-2 focus:border-indigo-500 focus:outline-none tracking-[0.3em]"
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-2">게임 시간제한 해제 및 학습 통계 접근에 사용됩니다</p>
+        </div>
       </main>
     </div>
   )

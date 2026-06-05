@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Search, Star, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playCorrect, playWrong } from '@/lib/audio'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -868,13 +868,21 @@ export default function SpotDiff() {
   const remainingHints = level.diffs.filter(d => !found.has(d.elemId) && !hintUsed.has(d.elemId)).length
 
   return (
-    <div className="min-h-dvh flex flex-col bg-gradient-to-br from-indigo-50 to-violet-50 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+    <div className="min-h-dvh flex flex-col bg-gradient-to-br from-indigo-50 via-violet-50/30 to-slate-50 p-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
       <header className="flex items-center justify-between mb-1">
-        <Link to="/game" className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700">
-          <ChevronLeft size={20}/> 게임
+        <Link to="/game" className="p-2.5 -ml-2 rounded-xl hover:bg-gray-100/80 transition-colors">
+          <ChevronLeft size={20} className="text-gray-500" />
         </Link>
-        <h2 className="text-lg font-bold text-gray-700">🔍 틀린그림찾기</h2>
-        <span className="text-lg font-bold text-orange-500">⭐{score}</span>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-sm">
+            <Search size={14} className="text-white" strokeWidth={2.5} />
+          </div>
+          <h2 className="text-[17px] font-bold text-gray-900">틀린그림찾기</h2>
+        </div>
+        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200/60">
+          <Star size={14} className="text-orange-500" fill="currentColor" />
+          <span className="text-sm font-bold text-orange-600">{score}</span>
+        </div>
       </header>
 
       {/* 상태 바: 타이머 + 차이점 + 힌트 */}
@@ -928,30 +936,32 @@ export default function SpotDiff() {
       <AnimatePresence>
         {(cleared || timeUp) && (
           <motion.div initial={{scale:0}} animate={{scale:1}} exit={{scale:0}}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-            <div className="bg-white rounded-3xl p-8 text-center shadow-2xl mx-4">
-              <div className="text-5xl mb-3">{cleared ? '🎉' : '⏰'}</div>
-              <p className="text-xl font-bold mb-1" style={{color: cleared ? '#16a34a' : '#dc2626'}}>
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl p-8 text-center shadow-2xl mx-4 border border-gray-100">
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${cleared ? 'from-emerald-400 to-green-500' : 'from-rose-400 to-red-500'} flex items-center justify-center shadow-md`}>
+                <Trophy size={28} className="text-white" />
+              </div>
+              <p className={`text-xl font-bold mb-1 ${cleared ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {cleared ? '모두 찾았어요!' : '시간 초과!'}
               </p>
               {cleared && (
                 <div className="text-sm text-gray-500 mb-1 space-y-0.5">
                   <p>시간 보너스 +{timeLeft * 2}점</p>
-                  {combo >= 2 && <p>최고 콤보 🔥×{combo}</p>}
+                  {combo >= 2 && <p>최고 콤보 ×{combo}</p>}
                 </div>
               )}
-              <p className="text-gray-500 mb-4">총 ⭐{score}점</p>
+              <p className="text-gray-500 mb-4">총 {score}점</p>
               <div className="flex gap-3 justify-center">
                 {cleared ? (
-                  <button onClick={next} className="px-8 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold text-lg transition-colors">
+                  <button onClick={next} className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-bold text-lg transition-all shadow-md shadow-indigo-500/25">
                     다음 라운드 →
                   </button>
                 ) : (
                   <>
-                    <button onClick={restart} className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-bold transition-colors">
+                    <button onClick={restart} className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-colors">
                       처음부터
                     </button>
-                    <button onClick={next} className="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-bold transition-colors">
+                    <button onClick={next} className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-bold transition-all shadow-md shadow-indigo-500/25">
                       다음 라운드
                     </button>
                   </>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Target, Star, Trophy } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playCorrect } from '@/lib/audio'
 import { useSettingsStore } from '@/stores/settingsStore'
@@ -144,50 +144,61 @@ export default function WhackAMole() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-gradient-to-br from-green-50 to-lime-50 p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="min-h-dvh flex flex-col bg-gradient-to-br from-emerald-50 via-green-50/30 to-slate-50 p-4 pt-[max(1rem,env(safe-area-inset-top))]">
       <header className="flex items-center justify-between mb-4">
-        <Link to="/game" className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700">
-          <ChevronLeft size={20} /> 게임
+        <Link to="/game" className="p-2.5 -ml-2 rounded-xl hover:bg-gray-100/80 transition-colors">
+          <ChevronLeft size={20} className="text-gray-500" />
         </Link>
-        <h2 className="text-xl font-bold text-gray-700">🐹 두더지잡기</h2>
-        <div className="text-lg font-bold text-orange-500">⭐ {score}</div>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-sm">
+            <Target size={14} className="text-white" strokeWidth={2.5} />
+          </div>
+          <h2 className="text-[17px] font-bold text-gray-900">두더지잡기</h2>
+        </div>
+        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200/60">
+          <Star size={14} className="text-orange-500" fill="currentColor" />
+          <span className="text-sm font-bold text-orange-600">{score}</span>
+        </div>
       </header>
 
       {!started || finished ? (
         <main className="flex-1 flex flex-col items-center justify-center gap-6">
           {finished && (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="text-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
             >
-              <div className="text-6xl mb-2">🎉</div>
-              <p className="text-3xl font-bold text-gray-700">{score}마리 잡았어요!</p>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-md">
+                <Trophy size={28} className="text-white" />
+              </div>
+              <p className="text-3xl font-bold text-gray-800">{score}마리</p>
+              <p className="text-gray-500 mt-1">잡았어요!</p>
             </motion.div>
           )}
           <button
             onClick={start}
-            className="px-8 py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl text-2xl font-bold shadow-lg transition-colors"
+            className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-2xl text-xl font-bold shadow-lg shadow-emerald-500/25 transition-all"
           >
             {finished ? '다시 하기' : '시작!'}
           </button>
         </main>
       ) : (
         <main className="flex-1 flex flex-col items-center gap-4">
-          <div className="w-full max-w-sm bg-green-200 rounded-full h-3 overflow-hidden">
+          <div className="w-full max-w-sm bg-gray-100 rounded-full h-2.5 overflow-hidden">
             <div
-              className="h-full bg-green-500 transition-all duration-1000"
+              className="h-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all duration-1000 rounded-full"
               style={{ width: `${(timeLeft / GAME_TIME) * 100}%` }}
             />
           </div>
-          <p className="text-gray-500 text-sm">{timeLeft}초</p>
+          <p className="text-gray-400 text-sm font-medium">{timeLeft}초</p>
 
-          <div className="grid grid-cols-3 gap-2 w-full max-w-sm mt-2 touch-manipulation">
+          <div className="grid grid-cols-3 gap-2.5 w-full max-w-sm mt-2 touch-manipulation">
             {Array.from({ length: GRID }).map((_, i) => (
               <button
                 key={i}
                 onPointerDown={() => whack(i)}
-                className="aspect-square rounded-2xl bg-amber-100 border-2 border-amber-300 flex items-center justify-center text-5xl select-none touch-manipulation active:scale-95 transition-transform relative overflow-visible"
+                className="aspect-square rounded-2xl bg-white border border-gray-200/80 shadow-sm flex items-center justify-center text-5xl select-none touch-manipulation active:scale-95 transition-transform relative overflow-visible hover:border-emerald-300"
               >
                 <AnimatePresence>
                   {actives.has(i) && (

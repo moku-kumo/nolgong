@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Bike, Star, Trophy, Flame, Heart } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { playCorrect, playWrong } from '@/lib/audio'
 import { useGameTimer } from '@/hooks/useGameTimer'
@@ -354,21 +354,31 @@ export default function Sewing() {
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-gray-900 to-gray-800 flex flex-col p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-      <Link to="/game" className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 mb-2">
-        <ChevronLeft size={20} /> 게임 홈
-      </Link>
-      <h1 className="text-3xl font-bold text-red-400 text-center mb-2">🏍️ 오토바이 러시</h1>
+      <header className="flex items-center justify-between mb-2">
+        <Link to="/game" className="p-2.5 -ml-2 rounded-xl hover:bg-gray-700/50 transition-colors">
+          <ChevronLeft size={20} className="text-gray-400" />
+        </Link>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-sm">
+            <Bike size={14} className="text-white" strokeWidth={2.5} />
+          </div>
+          <h1 className="text-[17px] font-bold text-gray-100">오토바이 러시</h1>
+        </div>
+        <div className="w-8" />
+      </header>
 
       {phase === 'playing' && (
         <div className="flex justify-between items-center max-w-sm mx-auto w-full mb-2 gap-2">
-          <div className="flex-1 bg-gray-800 rounded-xl px-3 py-2 shadow text-center text-sm font-bold text-yellow-400">
-            ⭐ {score}
+          <div className="flex items-center gap-1.5 bg-gray-800/80 rounded-xl px-3 py-2 border border-gray-700 text-sm font-bold text-orange-400">
+            <Star size={14} fill="currentColor" /> {score}
           </div>
-          <div className="flex-1 bg-gray-800 rounded-xl px-3 py-2 shadow text-center text-sm font-bold text-orange-400">
-            🔥 {combo}
+          <div className="flex items-center gap-1.5 bg-gray-800/80 rounded-xl px-3 py-2 border border-gray-700 text-sm font-bold text-amber-400">
+            <Flame size={14} /> {combo}
           </div>
-          <div className="flex-1 bg-gray-800 rounded-xl px-3 py-2 shadow text-center text-sm font-bold text-red-400">
-            {'❤️'.repeat(lives)}{'🖤'.repeat(3 - lives)}
+          <div className="flex items-center gap-1 bg-gray-800/80 rounded-xl px-3 py-2 border border-gray-700">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Heart key={i} size={14} className={i < lives ? 'text-rose-500' : 'text-gray-600'} fill={i < lives ? 'currentColor' : 'none'} />
+            ))}
           </div>
         </div>
       )}
@@ -388,7 +398,9 @@ export default function Sewing() {
       <div className="flex-1 flex flex-col items-center justify-center">
         {phase === 'idle' && (
           <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center px-4">
-            <div className="text-7xl mb-4">🏍️</div>
+            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg">
+              <Bike size={36} className="text-white" />
+            </div>
             <h2 className="text-2xl font-bold text-red-400 mb-2">오토바이 러시!</h2>
             <p className="text-gray-400 mb-1">커브 도로를 따라 달려요!</p>
             <p className="text-gray-500 text-sm mb-1">← → / 화면 좌우 터치로 조향</p>
@@ -398,7 +410,7 @@ export default function Sewing() {
                 <button
                   key={i}
                   onClick={() => handleStart(i)}
-                  className="px-8 py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-lg font-bold rounded-2xl shadow-lg transition-colors"
+                  className="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white text-lg font-bold rounded-2xl shadow-lg shadow-red-500/25 transition-all"
                 >
                   {l.label}
                 </button>
@@ -434,26 +446,28 @@ export default function Sewing() {
         )}
 
         {phase === 'done' && (
-          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center p-8 bg-gray-800 rounded-3xl shadow-xl max-w-sm w-full mx-4 border border-gray-700">
-            <div className="text-6xl mb-3">{progress >= 1 ? '🏆' : '💥'}</div>
-            <h2 className="text-2xl font-bold text-red-400 mb-1">
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center p-8 bg-gray-800 rounded-2xl shadow-xl max-w-sm w-full mx-4 border border-gray-700">
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${progress >= 1 ? 'from-amber-400 to-orange-500' : 'from-rose-400 to-red-500'} flex items-center justify-center shadow-md`}>
+              <Trophy size={28} className="text-white" />
+            </div>
+            <h2 className={`text-2xl font-bold mb-1 ${progress >= 1 ? 'text-amber-400' : 'text-rose-400'}`}>
               {progress >= 1 ? '완주 성공!' : '충돌!'}
             </h2>
             <p className="text-gray-500 text-sm mb-4">
               {progress >= 1 ? '멋진 라이더!' : `${Math.floor(progress * 100)}% 진행`}
             </p>
-            <div className="text-4xl font-bold text-yellow-400 mb-1">{score}점</div>
-            <p className="text-gray-500 text-xs mb-6">최대 콤보: {maxCombo} 🔥</p>
+            <div className="text-4xl font-bold text-orange-400 mb-1">{score}점</div>
+            <p className="text-gray-500 text-xs mb-6">최대 콤보: {maxCombo}</p>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => handleStart(level)}
-                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow transition-colors"
+                className="px-6 py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold rounded-xl shadow-md shadow-red-500/25 transition-all"
               >
-                다시하기 🔄
+                다시하기
               </button>
               <Link
                 to="/game"
-                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold rounded-xl shadow transition-colors"
+                className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold rounded-xl transition-colors"
               >
                 게임 홈
               </Link>
