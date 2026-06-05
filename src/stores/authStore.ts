@@ -6,8 +6,10 @@ interface AuthState {
   user: User | null
   session: Session | null
   loading: boolean
+  guest: boolean
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
+  enterAsGuest: () => void
   initialize: () => () => void
 }
 
@@ -15,6 +17,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
   loading: true,
+  guest: false,
 
   signInWithGoogle: async () => {
     await supabase.auth.signInWithOAuth({
@@ -27,7 +30,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     await supabase.auth.signOut()
-    set({ user: null, session: null })
+    set({ user: null, session: null, guest: false })
+  },
+
+  enterAsGuest: () => {
+    set({ guest: true, loading: false })
   },
 
   initialize: () => {

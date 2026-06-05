@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/stores/authStore'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { BookOpen, Sparkles } from 'lucide-react'
 
 export default function Login() {
-  const { user, loading, signInWithGoogle } = useAuthStore()
+  const { user, loading, signInWithGoogle, enterAsGuest } = useAuthStore()
+  const navigate = useNavigate()
 
   if (loading) {
     return (
@@ -77,7 +78,7 @@ export default function Login() {
         </motion.button>
 
         <motion.button
-          onClick={signInWithGoogle}
+          onClick={() => { enterAsGuest(); navigate('/') }}
           className="w-full flex items-center justify-center gap-2 h-[56px] mt-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white/90 font-medium text-[15px] hover:bg-white/15 transition-all"
           whileHover={{ y: -1 }}
           whileTap={{ scale: 0.97 }}
