@@ -3,6 +3,7 @@ import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
+import { Image } from 'lucide-react'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { englishWords, type WordEntry } from '@/data/englishWords'
 import { shuffle, pickRandom } from '@/lib/random'
@@ -50,7 +51,9 @@ export default function PictureWord() {
 
   return (
     <GameLayout
-      title="🖼️ 그림단어"
+      title="그림단어"
+      icon={Image}
+      iconGradient="from-green-500 to-emerald-600"
       backTo="/english"
       backLabel="영어"
       score={score}

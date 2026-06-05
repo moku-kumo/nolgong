@@ -3,6 +3,7 @@ import GameLayout from '@/components/game/GameLayout'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { AudioLines } from 'lucide-react'
 import { useSpeech } from '@/hooks/useSpeech'
 import { phonicsList, type PhonicsEntry } from '@/data/phonics'
 import { shuffle, pickRandom } from '@/lib/random'
@@ -70,7 +71,9 @@ export default function Phonics() {
 
   return (
     <GameLayout
-      title="🔤 파닉스"
+      title="파닉스"
+      icon={AudioLines}
+      iconGradient="from-teal-500 to-cyan-600"
       backTo="/english"
       backLabel="영어"
       score={score}

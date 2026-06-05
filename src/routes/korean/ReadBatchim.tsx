@@ -69,7 +69,7 @@ export default function ReadBatchim() {
     <GameLayout
       title="📝 받침 단어"
       backTo="/korean"
-      backLabel="국어"
+      backLabel="한글"
       score={score}
       total={total}
       timerEnabled={timerEnabled}

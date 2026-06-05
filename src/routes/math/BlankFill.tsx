@@ -4,6 +4,7 @@ import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
 import { useSettingsStore, type PatternSettings } from '@/stores/settingsStore'
+import { PenLine } from 'lucide-react'
 import { randInt, shuffle } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
 
@@ -87,7 +88,9 @@ export default function BlankFill() {
 
   return (
     <GameLayout
-      title="✏️ 빈칸채우기"
+      title="빈칸채우기"
+      icon={PenLine}
+      iconGradient="from-sky-500 to-blue-600"
       backTo="/math"
       backLabel="수학"
       score={score}
@@ -97,27 +100,30 @@ export default function BlankFill() {
       timerKey={timerKey}
       onTimeUp={handleTimeUp}
     >
-      <div className="flex gap-3 items-center mb-6 flex-wrap justify-center">
-        {displaySeq.map((n, i) => {
-          const isBlank = problem.blanks.includes(i)
-          const blankOrder = problem.blanks.indexOf(i)
-          const isFilled = isBlank && filled[blankOrder] !== undefined
-          const isNext = isBlank && blankOrder === filled.length
-          return (
-            <div
-              key={i}
-              className={`w-14 h-14 flex items-center justify-center rounded-xl text-2xl font-bold ${
-                isBlank && !isFilled
-                  ? isNext
-                    ? 'bg-yellow-300 border-2 border-yellow-500 text-yellow-700 animate-pulse'
-                    : 'bg-yellow-200 border-2 border-yellow-400 text-yellow-600'
-                  : 'bg-white border border-gray-200 text-gray-700'
-              }`}
-            >
-              {n === -1 ? '?' : n}
-            </div>
-          )
-        })}
+      <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+        <p className="text-xs text-gray-400 text-center mb-3 font-medium">문제</p>
+        <div className="flex gap-3 items-center flex-wrap justify-center">
+          {displaySeq.map((n, i) => {
+            const isBlank = problem.blanks.includes(i)
+            const blankOrder = problem.blanks.indexOf(i)
+            const isFilled = isBlank && filled[blankOrder] !== undefined
+            const isNext = isBlank && blankOrder === filled.length
+            return (
+              <div
+                key={i}
+                className={`w-14 h-14 flex items-center justify-center rounded-xl text-2xl font-bold ${
+                  isBlank && !isFilled
+                    ? isNext
+                      ? 'bg-yellow-300 border-2 border-yellow-500 text-yellow-700 animate-pulse'
+                      : 'bg-yellow-200 border-2 border-yellow-400 text-yellow-600'
+                    : 'bg-white border border-gray-200 text-gray-700'
+                }`}
+              >
+                {n === -1 ? '?' : n}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {feedback ? (

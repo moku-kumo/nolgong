@@ -1,9 +1,9 @@
-const CACHE_NAME = 'smartstudy-v5'
+const CACHE_NAME = 'nolgong-v1'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
-      cache.addAll(['/smart-study/'])
+      cache.addAll(['/nolgong/'])
     )
   )
   self.skipWaiting()
@@ -29,7 +29,7 @@ self.addEventListener('fetch', (event) => {
       }
       return response
     }).catch(() =>
-      caches.match(event.request).then((cached) => cached || caches.match('/smart-study/'))
+      caches.match(event.request).then((cached) => cached || caches.match('/nolgong/'))
     )
   )
 })

@@ -3,6 +3,13 @@ import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
+function GieukIcon({ size = 22, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fill="currentColor" fontSize="16" fontWeight="700" fontFamily="sans-serif">ㄱ</text>
+    </svg>
+  )
+}
 import { useSettingsStore, type JamoFilter } from '@/stores/settingsStore'
 import { useSpeech } from '@/hooks/useSpeech'
 import { jamoList, type JamoEntry } from '@/data/koreanJamo'
@@ -65,9 +72,11 @@ export default function Jamo() {
 
   return (
     <GameLayout
-      title="ㄱㅏ 자음/모음"
+      title="자음/모음"
+      icon={GieukIcon}
+      iconGradient="from-violet-500 to-purple-600"
       backTo="/korean"
-      backLabel="국어"
+      backLabel="한글"
       score={score}
       total={total}
       timerEnabled={timerEnabled}

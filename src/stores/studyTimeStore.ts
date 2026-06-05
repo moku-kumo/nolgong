@@ -1,13 +1,16 @@
 import { create } from 'zustand'
 import { load, save } from '@/lib/storage'
+import { useSettingsStore } from '@/stores/settingsStore'
 
 function todayKey(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-/** 게임 잠금 해제 기준 (초) */
-export const REQUIRED_STUDY_SECONDS = 300 // 5분
+/** 게임 잠금 해제 기준 (초) — settingsStore에서 가져옴 */
+export function getRequiredStudySeconds(): number {
+  return useSettingsStore.getState().requiredStudyMinutes * 60
+}
 
 interface StudyTimeState {
   dailySeconds: Record<string, number>       // 공부 시간
@@ -61,9 +64,9 @@ export function getTodayGameSeconds(state: StudyTimeState): number {
   return state.dailyGameSeconds[todayKey()] ?? 0
 }
 
-/** 게임 잠금 해제 여부 (5분 이상 공부) */
+/** 게임 잠금 해제 여부 (설정된 시간 이상 공부) */
 export function isGameUnlocked(state: StudyTimeState): boolean {
-  return getTodaySeconds(state) >= REQUIRED_STUDY_SECONDS
+  return getTodaySeconds(state) >= getRequiredStudySeconds()
 }
 
 /** 남은 게임 가능 시간 (초) — 공부시간 - 게임시간, 최소 0 */

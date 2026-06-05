@@ -1,14 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect } from 'react'
+import { CheckCircle2, RefreshCw } from 'lucide-react'
 
 interface FeedbackProps {
   type: 'correct' | 'wrong' | null
   onDone?: () => void
-}
-
-const messages = {
-  correct: { text: '정답! 🎉', color: 'text-green-500' },
-  wrong: { text: '다시 해봐요! 💪', color: 'text-red-400' },
 }
 
 export default function Feedback({ type, onDone }: FeedbackProps) {
@@ -23,13 +19,23 @@ export default function Feedback({ type, onDone }: FeedbackProps) {
     <AnimatePresence>
       {type && (
         <motion.div
-          className={`text-3xl font-bold ${messages[type].color}`}
+          className={`flex items-center gap-2 text-2xl font-bold ${type === 'correct' ? 'text-emerald-500' : 'text-rose-400'}`}
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.5, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300 }}
         >
-          {messages[type].text}
+          {type === 'correct' ? (
+            <>
+              <CheckCircle2 size={28} />
+              <span>정답!</span>
+            </>
+          ) : (
+            <>
+              <RefreshCw size={28} />
+              <span>다시 해봐요!</span>
+            </>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

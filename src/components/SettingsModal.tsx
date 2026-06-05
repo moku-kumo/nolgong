@@ -1,5 +1,6 @@
 import { useSettingsStore, type AdditionDifficulty, type AlphabetMode, type JamoFilter } from '@/stores/settingsStore'
 import { useLocation } from 'react-router-dom'
+import { X, Volume2, Timer, Gauge, Pen, Shapes, Type, BookOpen, Headphones, Gamepad2 } from 'lucide-react'
 
 interface SettingsModalProps {
   open: boolean
@@ -10,10 +11,10 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
     <button
       onClick={onToggle}
-      className={`w-14 h-8 rounded-full transition-colors ${on ? 'bg-green-400' : 'bg-gray-300'} relative`}
+      className={`w-12 h-7 rounded-full transition-all ${on ? 'bg-indigo-500' : 'bg-gray-200'} relative`}
     >
       <span
-        className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-7' : 'translate-x-1'}`}
+        className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-transform ${on ? 'translate-x-5' : 'translate-x-0.5'}`}
       />
     </button>
   )
@@ -34,15 +35,24 @@ function SegmentButton<T extends string>({
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
-          className={`flex-1 min-w-[60px] py-2 rounded-xl font-bold text-sm transition-colors ${
+          className={`flex-1 min-w-[60px] py-2 rounded-xl font-semibold text-sm transition-all ${
             value === o.value
-              ? 'bg-orange-400 text-white shadow-md'
+              ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/25'
               : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
           }`}
         >
           {o.label}
         </button>
       ))}
+    </div>
+  )
+}
+
+function SectionLabel({ icon: Icon, label }: { icon: typeof Volume2; label: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <Icon size={16} className="text-indigo-400" />
+      <span className="text-[15px] font-semibold text-gray-700">{label}</span>
     </div>
   )
 }
@@ -67,28 +77,47 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
   const isWord = path.includes('/word')
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => onOpenChange(false)}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => onOpenChange(false)}>
       <div
-        className="bg-white rounded-3xl shadow-xl p-6 w-[340px] max-w-[90vw] max-h-[85vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-2xl w-[360px] max-w-[92vw] max-h-[85vh] overflow-y-auto relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-2xl font-bold text-gray-700 mb-5 text-center">⚙️ 설정</h2>
+        {/* Header */}
+        <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-gray-100 px-5 py-4 flex items-center justify-between rounded-t-2xl z-10">
+          <h2 className="text-lg font-bold text-gray-900">설정</h2>
+          <button
+            onClick={() => onOpenChange(false)}
+            className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <X size={20} className="text-gray-400" />
+          </button>
+        </div>
 
-        <div className="space-y-4">
-          {/* ─── 공통 설정 ─── */}
-          <label className="flex items-center justify-between">
-            <span className="text-lg">🔊 소리</span>
+        <div className="p-5 space-y-5">
+          {/* 공통 설정 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center">
+                <Volume2 size={18} className="text-green-500" />
+              </div>
+              <span className="text-[15px] font-medium text-gray-700">소리</span>
+            </div>
             <Toggle on={store.soundEnabled} onToggle={() => store.setSoundEnabled(!store.soundEnabled)} />
-          </label>
+          </div>
 
-          <label className="flex items-center justify-between">
-            <span className="text-lg">⏱️ 타이머</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center">
+                <Timer size={18} className="text-orange-500" />
+              </div>
+              <span className="text-[15px] font-medium text-gray-700">타이머</span>
+            </div>
             <Toggle on={store.timerEnabled} onToggle={() => store.setTimerEnabled(!store.timerEnabled)} />
-          </label>
+          </div>
 
           {store.timerEnabled && (
-            <div>
-              <span className="text-sm text-gray-500">제한시간: {store.timerSeconds}초</span>
+            <div className="pl-12">
+              <span className="text-sm text-gray-400">제한시간: {store.timerSeconds}초</span>
               <input
                 type="range"
                 min={5}
@@ -96,15 +125,36 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
                 step={5}
                 value={store.timerSeconds}
                 onChange={(e) => store.setTimerSeconds(Number(e.target.value))}
-                className="w-full mt-1 accent-orange-400"
+                className="w-full mt-1 accent-indigo-500"
               />
             </div>
           )}
 
-          {/* ─── 수학: 더하기 ─── */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
+                <Gamepad2 size={18} className="text-purple-500" />
+              </div>
+              <span className="text-[15px] font-medium text-gray-700">게임 해금 시간</span>
+            </div>
+            <span className="text-sm font-semibold text-indigo-500">{store.requiredStudyMinutes}분</span>
+          </div>
+          <div className="pl-12">
+            <input
+              type="range"
+              min={1}
+              max={60}
+              step={1}
+              value={store.requiredStudyMinutes}
+              onChange={(e) => store.setRequiredStudyMinutes(Number(e.target.value))}
+              className="w-full accent-indigo-500"
+            />
+          </div>
+
+          {/* 수학: 더하기 */}
           {(isAddition || (isMath && !isBlank && !isPattern)) && (
-            <div className="border-t pt-3">
-              <span className="text-lg block mb-2">🧮 더하기 난이도</span>
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Gauge} label="더하기 난이도" />
               <SegmentButton<AdditionDifficulty>
                 options={[
                   { value: 'easy', label: '쉬움 (1~5)' },
@@ -117,41 +167,23 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
             </div>
           )}
 
-          {/* ─── 수학: 빈칸채우기 ─── */}
+          {/* 수학: 빈칸채우기 */}
           {(isBlank || (isMath && !isAddition && !isPattern)) && (
-            <div className="border-t pt-3">
-              <span className="text-lg block mb-2">✏️ 빈칸채우기</span>
-              <div className="space-y-2">
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Pen} label="빈칸채우기" />
+              <div className="space-y-3">
                 <div>
-                  <span className="text-sm text-gray-500">숫자범위: {store.patternSettings.minNum}~{store.patternSettings.maxNum}</span>
+                  <span className="text-sm text-gray-400">숫자범위: {store.patternSettings.minNum}~{store.patternSettings.maxNum}</span>
                   <div className="flex gap-2 items-center mt-1">
-                    <input
-                      type="number"
-                      min={1}
-                      max={store.patternSettings.maxNum - 5}
-                      value={store.patternSettings.minNum}
-                      onChange={(e) => store.setPatternSettings({ minNum: Math.max(1, Number(e.target.value)) })}
-                      className="w-20 border rounded-lg px-2 py-1 text-center"
-                    />
-                    <span>~</span>
-                    <input
-                      type="number"
-                      min={store.patternSettings.minNum + 5}
-                      max={100}
-                      value={store.patternSettings.maxNum}
-                      onChange={(e) => store.setPatternSettings({ maxNum: Math.min(100, Number(e.target.value)) })}
-                      className="w-20 border rounded-lg px-2 py-1 text-center"
-                    />
+                    <input type="number" min={1} max={store.patternSettings.maxNum - 5} value={store.patternSettings.minNum} onChange={(e) => store.setPatternSettings({ minNum: Math.max(1, Number(e.target.value)) })} className="w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-center text-sm focus:border-indigo-400 focus:outline-none" />
+                    <span className="text-gray-300">~</span>
+                    <input type="number" min={store.patternSettings.minNum + 5} max={100} value={store.patternSettings.maxNum} onChange={(e) => store.setPatternSettings({ maxNum: Math.min(100, Number(e.target.value)) })} className="w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-center text-sm focus:border-indigo-400 focus:outline-none" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">빈칸 수: {store.patternSettings.blankCount}개</span>
+                  <span className="text-sm text-gray-400">빈칸 수</span>
                   <SegmentButton<string>
-                    options={[
-                      { value: '1', label: '1개' },
-                      { value: '2', label: '2개' },
-                      { value: '3', label: '3개' },
-                    ]}
+                    options={[{ value: '1', label: '1개' }, { value: '2', label: '2개' }, { value: '3', label: '3개' }]}
                     value={String(store.patternSettings.blankCount)}
                     onChange={(v) => store.setPatternSettings({ blankCount: Number(v) })}
                   />
@@ -160,135 +192,89 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
             </div>
           )}
 
-          {/* ─── 수학: 패턴채우기 ─── */}
+          {/* 수학: 패턴채우기 */}
           {(isPattern || (isMath && !isAddition && !isBlank)) && (
-            <div className="border-t pt-3">
-              <span className="text-lg block mb-2">📐 패턴채우기</span>
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Shapes} label="패턴채우기" />
               <SegmentButton<'easy' | 'hard'>
-                options={[
-                  { value: 'easy', label: '쉬움 (5단위)' },
-                  { value: 'hard', label: '어려움 (랜덤)' },
-                ]}
+                options={[{ value: 'easy', label: '쉬움 (5단위)' }, { value: 'hard', label: '어려움 (랜덤)' }]}
                 value={store.stepPatternSettings.difficulty}
                 onChange={(v) => store.setStepPatternSettings({ difficulty: v })}
               />
-              <div className="mt-2">
-                <span className="text-sm text-gray-500">빈칸 수: {store.stepPatternSettings.blankCount}개</span>
+              <div className="mt-3">
+                <span className="text-sm text-gray-400">빈칸 수</span>
                 <SegmentButton<string>
-                  options={[
-                    { value: '1', label: '1개' },
-                    { value: '2', label: '2개' },
-                    { value: '3', label: '3개' },
-                  ]}
+                  options={[{ value: '1', label: '1개' }, { value: '2', label: '2개' }, { value: '3', label: '3개' }]}
                   value={String(store.stepPatternSettings.blankCount)}
                   onChange={(v) => store.setStepPatternSettings({ blankCount: Number(v) })}
                 />
               </div>
-              <div className="mt-2">
-                <span className="text-sm text-gray-500">최대 숫자: {store.stepPatternSettings.maxNum}</span>
-                <input
-                  type="range"
-                  min={20}
-                  max={100}
-                  step={10}
-                  value={store.stepPatternSettings.maxNum}
-                  onChange={(e) => store.setStepPatternSettings({ maxNum: Number(e.target.value) })}
-                  className="w-full mt-1 accent-orange-400"
-                />
+              <div className="mt-3">
+                <span className="text-sm text-gray-400">최대 숫자: {store.stepPatternSettings.maxNum}</span>
+                <input type="range" min={20} max={100} step={10} value={store.stepPatternSettings.maxNum} onChange={(e) => store.setStepPatternSettings({ maxNum: Number(e.target.value) })} className="w-full mt-1 accent-indigo-500" />
               </div>
             </div>
           )}
 
-          {/* ─── 영어: 알파벳 ─── */}
+          {/* 영어: 알파벳 */}
           {(isAlphabet || (isEnglish && !isPicture && !isListen)) && (
-            <div className="border-t pt-3">
-              <span className="text-lg block mb-2">🅰️ 알파벳 모드</span>
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Type} label="알파벳 모드" />
               <SegmentButton<AlphabetMode>
-                options={[
-                  { value: 'upperToLower', label: '대→소' },
-                  { value: 'lowerToUpper', label: '소→대' },
-                  { value: 'mixed', label: '섞기' },
-                ]}
+                options={[{ value: 'upperToLower', label: '대→소' }, { value: 'lowerToUpper', label: '소→대' }, { value: 'mixed', label: '섞기' }]}
                 value={store.englishSettings.alphabetMode}
                 onChange={(v) => store.setEnglishSettings({ alphabetMode: v })}
               />
             </div>
           )}
 
-          {/* ─── 영어: 보기 수 & TTS ─── */}
+          {/* 영어: 보기 수 & TTS */}
           {(isPicture || isListen || (isEnglish && !isAlphabet)) && (
-            <div className="border-t pt-3">
-              <span className="text-lg block mb-2">📚 영어 단어</span>
-              <div className="space-y-2">
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Headphones} label="영어 단어" />
+              <div className="space-y-3">
                 <div>
-                  <span className="text-sm text-gray-500">보기 수</span>
+                  <span className="text-sm text-gray-400">보기 수</span>
                   <SegmentButton<string>
-                    options={[
-                      { value: '2', label: '2개' },
-                      { value: '4', label: '4개' },
-                      { value: '6', label: '6개' },
-                    ]}
+                    options={[{ value: '2', label: '2개' }, { value: '4', label: '4개' }, { value: '6', label: '6개' }]}
                     value={String(store.englishSettings.wordCount)}
                     onChange={(v) => store.setEnglishSettings({ wordCount: Number(v) })}
                   />
                 </div>
                 {(isListen || isEnglish) && (
                   <div>
-                    <span className="text-sm text-gray-500">듣기 속도: {store.englishSettings.ttsSpeed.toFixed(2)}</span>
-                    <input
-                      type="range"
-                      min={0.5}
-                      max={1.2}
-                      step={0.05}
-                      value={store.englishSettings.ttsSpeed}
-                      onChange={(e) => store.setEnglishSettings({ ttsSpeed: Number(e.target.value) })}
-                      className="w-full mt-1 accent-blue-400"
-                    />
+                    <span className="text-sm text-gray-400">듣기 속도: {store.englishSettings.ttsSpeed.toFixed(2)}</span>
+                    <input type="range" min={0.5} max={1.2} step={0.05} value={store.englishSettings.ttsSpeed} onChange={(e) => store.setEnglishSettings({ ttsSpeed: Number(e.target.value) })} className="w-full mt-1 accent-indigo-500" />
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* ─── 국어: 자음모음 ─── */}
+          {/* 국어: 자음모음 */}
           {(isJamo || (isKorean && !isWord)) && (
-            <div className="border-t pt-3">
-              <span className="text-lg block mb-2">ㄱㅏ 자음/모음 필터</span>
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Type} label="자음/모음 필터" />
               <SegmentButton<JamoFilter>
-                options={[
-                  { value: 'all', label: '전체' },
-                  { value: 'consonant', label: '자음만' },
-                  { value: 'vowel', label: '모음만' },
-                ]}
+                options={[{ value: 'all', label: '전체' }, { value: 'consonant', label: '자음만' }, { value: 'vowel', label: '모음만' }]}
                 value={store.koreanSettings.jamoFilter}
                 onChange={(v) => store.setKoreanSettings({ jamoFilter: v })}
               />
             </div>
           )}
 
-          {/* ─── 국어: 단어 길이 ─── */}
+          {/* 국어: 단어 길이 */}
           {(isWord || (isKorean && !isJamo)) && (
-            <div className="border-t pt-3">
-              <span className="text-lg block mb-2">📖 단어 길이</span>
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={BookOpen} label="단어 길이" />
               <SegmentButton<string>
-                options={[
-                  { value: 'all', label: '전체' },
-                  { value: 'short', label: '짧은 (2자)' },
-                  { value: 'long', label: '긴 (3자+)' },
-                ]}
+                options={[{ value: 'all', label: '전체' }, { value: 'short', label: '짧은 (2자)' }, { value: 'long', label: '긴 (3자+)' }]}
                 value={store.koreanSettings.wordLength}
                 onChange={(v) => store.setKoreanSettings({ wordLength: v as 'all' | 'short' | 'long' })}
               />
             </div>
           )}
         </div>
-
-        <button
-          onClick={() => onOpenChange(false)}
-          className="mt-6 w-full py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-lg transition-colors"
-        >
-          닫기
-        </button>
       </div>
     </div>
   )

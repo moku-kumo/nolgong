@@ -1,4 +1,9 @@
 ﻿import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useAuthStore } from '@/stores/authStore'
+import { syncAll } from '@/lib/sync'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import Login from '@/routes/Login'
 import Home from '@/routes/Home'
 import MathHome from '@/routes/math/MathHome'
 import Addition from '@/routes/math/Addition'
@@ -21,29 +26,43 @@ import ParentDashboard from '@/routes/ParentDashboard'
 import Phonics from '@/routes/english/Phonics'
 
 function App() {
+  const initialize = useAuthStore((s) => s.initialize)
+  const user = useAuthStore((s) => s.user)
+
+  useEffect(() => {
+    const unsubscribe = initialize()
+    return unsubscribe
+  }, [initialize])
+
+  // 로그인 후 서버 동기화
+  useEffect(() => {
+    if (user) syncAll()
+  }, [user])
+
   return (
-    <BrowserRouter basename="/smart-study">
+    <BrowserRouter basename="/nolgong">
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/math" element={<MathHome />} />
-        <Route path="/math/addition" element={<Addition />} />
-        <Route path="/math/blank" element={<BlankFill />} />
-        <Route path="/math/pattern" element={<Pattern />} />
-        <Route path="/english" element={<EnglishHome />} />
-        <Route path="/english/alphabet" element={<Alphabet />} />
-        <Route path="/english/picture" element={<PictureWord />} />
-        <Route path="/english/listen" element={<ListenWord />} />
-        <Route path="/korean" element={<KoreanHome />} />
-        <Route path="/korean/jamo" element={<Jamo />} />
-        <Route path="/korean/word" element={<ReadWord />} />
-        <Route path="/game" element={<GameHome />} />
-        <Route path="/game/whack" element={<WhackAMole />} />
-        <Route path="/game/dodge" element={<DodgePoop />} />
-        <Route path="/game/spot" element={<SpotDiff />} />
-        <Route path="/game/maze" element={<MazeFinder />} />
-        <Route path="/game/sewing" element={<Sewing />} />
-        <Route path="/parent" element={<ParentDashboard />} />
-        <Route path="/english/phonics" element={<Phonics />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/math" element={<ProtectedRoute><MathHome /></ProtectedRoute>} />
+        <Route path="/math/addition" element={<ProtectedRoute><Addition /></ProtectedRoute>} />
+        <Route path="/math/blank" element={<ProtectedRoute><BlankFill /></ProtectedRoute>} />
+        <Route path="/math/pattern" element={<ProtectedRoute><Pattern /></ProtectedRoute>} />
+        <Route path="/english" element={<ProtectedRoute><EnglishHome /></ProtectedRoute>} />
+        <Route path="/english/alphabet" element={<ProtectedRoute><Alphabet /></ProtectedRoute>} />
+        <Route path="/english/picture" element={<ProtectedRoute><PictureWord /></ProtectedRoute>} />
+        <Route path="/english/listen" element={<ProtectedRoute><ListenWord /></ProtectedRoute>} />
+        <Route path="/korean" element={<ProtectedRoute><KoreanHome /></ProtectedRoute>} />
+        <Route path="/korean/jamo" element={<ProtectedRoute><Jamo /></ProtectedRoute>} />
+        <Route path="/korean/word" element={<ProtectedRoute><ReadWord /></ProtectedRoute>} />
+        <Route path="/game" element={<ProtectedRoute><GameHome /></ProtectedRoute>} />
+        <Route path="/game/whack" element={<ProtectedRoute><WhackAMole /></ProtectedRoute>} />
+        <Route path="/game/dodge" element={<ProtectedRoute><DodgePoop /></ProtectedRoute>} />
+        <Route path="/game/spot" element={<ProtectedRoute><SpotDiff /></ProtectedRoute>} />
+        <Route path="/game/maze" element={<ProtectedRoute><MazeFinder /></ProtectedRoute>} />
+        <Route path="/game/sewing" element={<ProtectedRoute><Sewing /></ProtectedRoute>} />
+        <Route path="/parent" element={<ProtectedRoute><ParentDashboard /></ProtectedRoute>} />
+        <Route path="/english/phonics" element={<ProtectedRoute><Phonics /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )

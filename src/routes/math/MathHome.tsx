@@ -2,35 +2,35 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SubjectCard from '@/components/SubjectCard'
 import SettingsModal from '@/components/SettingsModal'
-import { ChevronLeft, Settings } from 'lucide-react'
+import { ChevronLeft, Settings, Plus, PenLine, Shapes } from 'lucide-react'
 
 const modes = [
-  { to: '/math/addition', emoji: '🧮', label: '더하기' },
-  { to: '/math/blank', emoji: '✏️', label: '빈칸채우기' },
-  { to: '/math/pattern', emoji: '📐', label: '패턴채우기' },
+  { to: '/math/addition', icon: Plus, label: '더하기', desc: '덧셈과 뺄셈 연습', gradient: 'bg-gradient-to-br from-blue-500 to-indigo-600', iconColor: 'text-white' },
+  { to: '/math/blank', icon: PenLine, label: '빈칸채우기', desc: '빠진 숫자를 찾아보세요', gradient: 'bg-gradient-to-br from-sky-500 to-blue-600', iconColor: 'text-white' },
+  { to: '/math/pattern', icon: Shapes, label: '패턴채우기', desc: '규칙을 찾아 완성해요', gradient: 'bg-gradient-to-br from-indigo-500 to-violet-600', iconColor: 'text-white' },
 ]
 
 export default function MathHome() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-blue-50 to-cyan-50 p-6 pt-[max(1.5rem,env(safe-area-inset-top))] relative">
-      <button
-        onClick={() => setSettingsOpen(true)}
-        className="absolute top-4 right-4 p-3 rounded-full bg-white/70 hover:bg-white shadow-md transition"
-        aria-label="설정"
-      >
-        <Settings size={24} className="text-gray-500" />
-      </button>
-      <Link to="/" className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-700 mb-6">
-        <ChevronLeft size={20} /> 홈으로
-      </Link>
-      <h1 className="text-4xl font-bold text-blue-600 mb-8 text-center">🔢 수학</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-lg mx-auto">
+    <div className="min-h-dvh bg-gradient-to-br from-blue-50 via-indigo-50/30 to-slate-50">
+      <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+        <div className="max-w-lg mx-auto flex items-center justify-between px-5 h-[60px]">
+          <Link to="/" className="p-2.5 -ml-2 rounded-xl hover:bg-gray-100/80 transition-colors">
+            <ChevronLeft size={20} className="text-gray-500" />
+          </Link>
+          <h1 className="text-[17px] font-bold text-gray-900">수학</h1>
+          <button onClick={() => setSettingsOpen(true)} className="p-2.5 rounded-xl hover:bg-gray-100/80 transition-colors" aria-label="설정">
+            <Settings size={20} className="text-gray-400" />
+          </button>
+        </div>
+      </header>
+      <main className="max-w-lg mx-auto px-5 pt-6 pb-8 space-y-3">
         {modes.map((m, i) => (
           <SubjectCard key={m.to} {...m} index={i} />
         ))}
-      </div>
-      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      </main>
+      {settingsOpen && <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />}
     </div>
   )
 }

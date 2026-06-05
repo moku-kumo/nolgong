@@ -3,12 +3,12 @@ import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
+import { Volume2 } from 'lucide-react'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useSpeech } from '@/hooks/useSpeech'
 import { englishWords, type WordEntry } from '@/data/englishWords'
 import { shuffle, pickRandom } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
-import { Volume2 } from 'lucide-react'
 
 function generateProblem(wordCount: number) {
   const [correct, ...distractors] = pickRandom(englishWords, wordCount) as [WordEntry, ...WordEntry[]]
@@ -61,7 +61,9 @@ export default function ListenWord() {
 
   return (
     <GameLayout
-      title="🔊 듣기"
+      title="듣기"
+      icon={Volume2}
+      iconGradient="from-cyan-500 to-teal-600"
       backTo="/english"
       backLabel="영어"
       score={score}

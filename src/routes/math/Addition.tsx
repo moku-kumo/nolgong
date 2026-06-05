@@ -6,6 +6,7 @@ import { useScore } from '@/hooks/useScore'
 import { useSettingsStore, additionRanges, type AdditionDifficulty } from '@/stores/settingsStore'
 import { randInt, shuffle } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
+import { Plus } from 'lucide-react'
 
 function generateProblem(difficulty: AdditionDifficulty) {
   const range = additionRanges[difficulty]
@@ -56,7 +57,9 @@ export default function Addition() {
 
   return (
     <GameLayout
-      title="🧮 더하기"
+      title="더하기"
+      icon={Plus}
+      iconGradient="from-blue-500 to-indigo-600"
       backTo="/math"
       backLabel="수학"
       score={score}

@@ -3,6 +3,7 @@ import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
+import { BookOpen } from 'lucide-react'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { koreanWords, type KoreanWordEntry } from '@/data/koreanWords'
 import { shuffle, pickRandom } from '@/lib/random'
@@ -68,9 +69,11 @@ export default function ReadWord() {
 
   return (
     <GameLayout
-      title="📖 단어읽기"
+      title="단어읽기"
+      icon={BookOpen}
+      iconGradient="from-purple-500 to-fuchsia-600"
       backTo="/korean"
-      backLabel="국어"
+      backLabel="한글"
       score={score}
       total={total}
       timerEnabled={timerEnabled}

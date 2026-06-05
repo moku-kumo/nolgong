@@ -2,36 +2,36 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SubjectCard from '@/components/SubjectCard'
 import SettingsModal from '@/components/SettingsModal'
-import { ChevronLeft, Settings } from 'lucide-react'
+import { ChevronLeft, Settings, ALargeSmall, AudioLines, Image, Volume2 } from 'lucide-react'
 
 const modes = [
-  { to: '/english/alphabet', emoji: '🅰️', label: '알파벳' },
-  { to: '/english/phonics', emoji: '🔤', label: '파닉스' },
-  { to: '/english/picture', emoji: '🖼️', label: '그림단어' },
-  { to: '/english/listen', emoji: '🔊', label: '듣기' },
+  { to: '/english/alphabet', icon: ALargeSmall, label: '알파벳', desc: 'A부터 Z까지 배워요', gradient: 'bg-gradient-to-br from-emerald-500 to-teal-600', iconColor: 'text-white' },
+  { to: '/english/phonics', icon: AudioLines, label: '파닉스', desc: '소리와 글자의 관계', gradient: 'bg-gradient-to-br from-teal-500 to-cyan-600', iconColor: 'text-white' },
+  { to: '/english/picture', icon: Image, label: '그림단어', desc: '그림을 보고 단어를 찾아요', gradient: 'bg-gradient-to-br from-green-500 to-emerald-600', iconColor: 'text-white' },
+  { to: '/english/listen', icon: Volume2, label: '듣기', desc: '듣고 맞는 단어를 골라요', gradient: 'bg-gradient-to-br from-cyan-500 to-teal-600', iconColor: 'text-white' },
 ]
 
 export default function EnglishHome() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-green-50 to-emerald-50 p-6 pt-[max(1.5rem,env(safe-area-inset-top))] relative">
-      <button
-        onClick={() => setSettingsOpen(true)}
-        className="absolute top-4 right-4 p-3 rounded-full bg-white/70 hover:bg-white shadow-md transition"
-        aria-label="설정"
-      >
-        <Settings size={24} className="text-gray-500" />
-      </button>
-      <Link to="/" className="inline-flex items-center gap-1 text-green-500 hover:text-green-700 mb-6">
-        <ChevronLeft size={20} /> 홈으로
-      </Link>
-      <h1 className="text-4xl font-bold text-green-600 mb-8 text-center">🔤 영어</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-lg mx-auto">
+    <div className="min-h-dvh bg-gradient-to-br from-emerald-50 via-teal-50/30 to-slate-50">
+      <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+        <div className="max-w-lg mx-auto flex items-center justify-between px-5 h-[60px]">
+          <Link to="/" className="p-2.5 -ml-2 rounded-xl hover:bg-gray-100/80 transition-colors">
+            <ChevronLeft size={20} className="text-gray-500" />
+          </Link>
+          <h1 className="text-[17px] font-bold text-gray-900">영어</h1>
+          <button onClick={() => setSettingsOpen(true)} className="p-2.5 rounded-xl hover:bg-gray-100/80 transition-colors" aria-label="설정">
+            <Settings size={20} className="text-gray-400" />
+          </button>
+        </div>
+      </header>
+      <main className="max-w-lg mx-auto px-5 pt-6 pb-8 space-y-3">
         {modes.map((m, i) => (
           <SubjectCard key={m.to} {...m} index={i} />
         ))}
-      </div>
-      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      </main>
+      {settingsOpen && <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />}
     </div>
   )
 }

@@ -12,6 +12,6 @@ createRoot(document.getElementById('root')!).render(
 // Service Worker 등록
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/smart-study/sw.js')
+    navigator.serviceWorker.register('/nolgong/sw.js')
   })
 }

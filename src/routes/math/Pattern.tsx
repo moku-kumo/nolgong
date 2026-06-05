@@ -4,6 +4,7 @@ import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
 import { useSettingsStore, type StepPatternSettings } from '@/stores/settingsStore'
+import { Shapes } from 'lucide-react'
 import { randInt, shuffle } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
 
@@ -106,7 +107,9 @@ export default function Pattern() {
 
   return (
     <GameLayout
-      title="📐 패턴채우기"
+      title="패턴채우기"
+      icon={Shapes}
+      iconGradient="from-indigo-500 to-violet-600"
       backTo="/math"
       backLabel="수학"
       score={score}
@@ -116,28 +119,30 @@ export default function Pattern() {
       timerKey={timerKey}
       onTimeUp={handleTimeUp}
     >
-      <p className="text-sm text-gray-400 mb-2">+{problem.step}씩 커져요</p>
-      <div className="flex gap-3 items-center mb-6 flex-wrap justify-center">
-        {displaySeq.map((n, i) => {
-          const isBlank = problem.blanks.includes(i)
-          const blankOrder = problem.blanks.indexOf(i)
-          const isFilled = isBlank && filled[blankOrder] !== undefined
-          const isNext = isBlank && blankOrder === filled.length
-          return (
-            <div
-              key={i}
-              className={`w-16 h-16 flex items-center justify-center rounded-xl text-2xl font-bold ${
-                isBlank && !isFilled
-                  ? isNext
-                    ? 'bg-orange-300 border-2 border-orange-500 text-orange-700 animate-pulse'
-                    : 'bg-orange-200 border-2 border-orange-400 text-orange-600'
-                  : 'bg-white border border-gray-200 text-gray-700'
-              }`}
-            >
-              {n === -1 ? '?' : n}
-            </div>
-          )
-        })}
+      <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
+        <p className="text-xs text-gray-400 text-center mb-3 font-medium">+{problem.step}씩 커져요</p>
+        <div className="flex gap-3 items-center flex-wrap justify-center">
+          {displaySeq.map((n, i) => {
+            const isBlank = problem.blanks.includes(i)
+            const blankOrder = problem.blanks.indexOf(i)
+            const isFilled = isBlank && filled[blankOrder] !== undefined
+            const isNext = isBlank && blankOrder === filled.length
+            return (
+              <div
+                key={i}
+                className={`w-16 h-16 flex items-center justify-center rounded-xl text-2xl font-bold ${
+                  isBlank && !isFilled
+                    ? isNext
+                      ? 'bg-orange-300 border-2 border-orange-500 text-orange-700 animate-pulse'
+                      : 'bg-orange-200 border-2 border-orange-400 text-orange-600'
+                    : 'bg-white border border-gray-200 text-gray-700'
+                }`}
+              >
+                {n === -1 ? '?' : n}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {feedback ? (

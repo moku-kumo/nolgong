@@ -41,6 +41,7 @@ interface SettingsState {
   soundEnabled: boolean
   timerEnabled: boolean
   timerSeconds: number // 글로벌 타이머 초
+  requiredStudyMinutes: number // 게임 잠금 해제 기준 (분)
 
   // 수학
   additionDifficulty: AdditionDifficulty
@@ -57,6 +58,7 @@ interface SettingsState {
   setSoundEnabled: (v: boolean) => void
   setTimerEnabled: (v: boolean) => void
   setTimerSeconds: (v: number) => void
+  setRequiredStudyMinutes: (v: number) => void
   setAdditionDifficulty: (v: AdditionDifficulty) => void
   setPatternSettings: (v: Partial<PatternSettings>) => void
   setStepPatternSettings: (v: Partial<StepPatternSettings>) => void
@@ -73,6 +75,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   soundEnabled: load('soundEnabled', true),
   timerEnabled: load('timerEnabled', true),
   timerSeconds: load('timerSeconds', 25),
+  requiredStudyMinutes: load('requiredStudyMinutes', 5),
 
   additionDifficulty: load<AdditionDifficulty>('additionDifficulty', 'easy'),
   patternSettings: load<PatternSettings>('patternSettings', defaultPatternSettings),
@@ -83,6 +86,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setSoundEnabled: (v) => { save('soundEnabled', v); set({ soundEnabled: v }) },
   setTimerEnabled: (v) => { save('timerEnabled', v); set({ timerEnabled: v }) },
   setTimerSeconds: (v) => { save('timerSeconds', v); set({ timerSeconds: v }) },
+  setRequiredStudyMinutes: (v) => { save('requiredStudyMinutes', v); set({ requiredStudyMinutes: v }) },
 
   setAdditionDifficulty: (v) => { save('additionDifficulty', v); set({ additionDifficulty: v }) },
   setPatternSettings: (v) => {

@@ -3,6 +3,7 @@ import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
+import { ALargeSmall } from 'lucide-react'
 import { useSettingsStore, type AlphabetMode } from '@/stores/settingsStore'
 import { alphabet } from '@/data/alphabet'
 import { randInt, shuffle } from '@/lib/random'
@@ -62,7 +63,9 @@ export default function Alphabet() {
 
   return (
     <GameLayout
-      title="🅰️ 알파벳"
+      title="알파벳"
+      icon={ALargeSmall}
+      iconGradient="from-emerald-500 to-teal-600"
       backTo="/english"
       backLabel="영어"
       score={score}

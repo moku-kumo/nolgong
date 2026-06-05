@@ -2,34 +2,42 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SubjectCard from '@/components/SubjectCard'
 import SettingsModal from '@/components/SettingsModal'
-import { ChevronLeft, Settings } from 'lucide-react'
+import { ChevronLeft, Settings, BookOpen } from 'lucide-react'
+
+function GieukIcon({ size = 22, className = '' }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fill="currentColor" fontSize="16" fontWeight="700" fontFamily="sans-serif">ㄱ</text>
+    </svg>
+  )
+}
 
 const modes = [
-  { to: '/korean/jamo', emoji: 'ㄱㅏ', label: '자음/모음' },
-  { to: '/korean/word', emoji: '📖', label: '단어읽기' },
+  { to: '/korean/jamo', icon: GieukIcon, label: '자음/모음', desc: 'ㄱㄴㄷ ㅁㅂㅅ 배우기', gradient: 'bg-gradient-to-br from-violet-500 to-purple-600', iconColor: 'text-white' },
+  { to: '/korean/word', icon: BookOpen, label: '단어읽기', desc: '한글 단어를 속도감 있게', gradient: 'bg-gradient-to-br from-purple-500 to-fuchsia-600', iconColor: 'text-white' },
 ]
 
 export default function KoreanHome() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-purple-50 to-fuchsia-50 p-6 pt-[max(1.5rem,env(safe-area-inset-top))] relative">
-      <button
-        onClick={() => setSettingsOpen(true)}
-        className="absolute top-4 right-4 p-3 rounded-full bg-white/70 hover:bg-white shadow-md transition"
-        aria-label="설정"
-      >
-        <Settings size={24} className="text-gray-500" />
-      </button>
-      <Link to="/" className="inline-flex items-center gap-1 text-purple-500 hover:text-purple-700 mb-6">
-        <ChevronLeft size={20} /> 홈으로
-      </Link>
-      <h1 className="text-4xl font-bold text-purple-600 mb-8 text-center">가 국어</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-lg mx-auto">
+    <div className="min-h-dvh bg-gradient-to-br from-violet-50 via-purple-50/30 to-slate-50">
+      <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+        <div className="max-w-lg mx-auto flex items-center justify-between px-5 h-[60px]">
+          <Link to="/" className="p-2.5 -ml-2 rounded-xl hover:bg-gray-100/80 transition-colors">
+            <ChevronLeft size={20} className="text-gray-500" />
+          </Link>
+          <h1 className="text-[17px] font-bold text-gray-900">한글</h1>
+          <button onClick={() => setSettingsOpen(true)} className="p-2.5 rounded-xl hover:bg-gray-100/80 transition-colors" aria-label="설정">
+            <Settings size={20} className="text-gray-400" />
+          </button>
+        </div>
+      </header>
+      <main className="max-w-lg mx-auto px-5 pt-6 pb-8 space-y-3">
         {modes.map((m, i) => (
           <SubjectCard key={m.to} {...m} index={i} />
         ))}
-      </div>
-      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      </main>
+      {settingsOpen && <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />}
     </div>
   )
 }
