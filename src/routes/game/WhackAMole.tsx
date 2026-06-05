@@ -14,6 +14,8 @@ export default function WhackAMole() {
   const { soundEnabled } = useSettingsStore()
   const [score, setScore] = useState(0)
   const [actives, setActives] = useState<Set<number>>(new Set())
+  const [goldens, setGoldens] = useState<Set<number>>(new Set())
+  const activesRef = useRef<Set<number>>(new Set())
   const [timeLeft, setTimeLeft] = useState(GAME_TIME)
   const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
@@ -57,12 +59,23 @@ export default function WhackAMole() {
 
       for (const slot of slots) {
         next.add(slot)
+        activesRef.current.add(slot)
+        // ~13% 확률로 골든 두더지 (2점)
+        if (Math.random() < 0.13) {
+          setGoldens((g) => new Set(g).add(slot))
+        }
         // 각 두더지 개별 타이머: 일정 시간 후 사라짐
         const hideDelay = showTime + Math.random() * 300
         const timer = setTimeout(() => {
           if (!runningRef.current) return
+          activesRef.current.delete(slot)
           setActives((s) => {
             const n = new Set(s)
+            n.delete(slot)
+            return n
+          })
+          setGoldens((g) => {
+            const n = new Set(g)
             n.delete(slot)
             return n
           })
@@ -89,6 +102,8 @@ export default function WhackAMole() {
     elapsedRef.current = 0
     setTimeLeft(GAME_TIME)
     setActives(new Set())
+    setGoldens(new Set())
+    activesRef.current = new Set()
     moleTimers.current.forEach((t) => clearTimeout(t))
     moleTimers.current.clear()
     runningRef.current = true
@@ -122,25 +137,29 @@ export default function WhackAMole() {
   }, [])
 
   const whack = (idx: number) => {
-    setActives((prev) => {
-      if (!prev.has(idx)) return prev
-      if (soundEnabled) playCorrect()
-      scoreRef.current += 1
-      setScore(scoreRef.current)
-      // +1 팝업 효과
-      const pid = popupId.current++
-      setPopups((p) => [...p, { id: pid, slot: idx, points: 1 }])
-      setTimeout(() => setPopups((p) => p.filter((v) => v.id !== pid)), 700)
-      // 해당 두더지 타이머 취소
-      const timer = moleTimers.current.get(idx)
-      if (timer) {
-        clearTimeout(timer)
-        moleTimers.current.delete(idx)
-      }
-      const next = new Set(prev)
-      next.delete(idx)
-      return next
-    })
+    if (!activesRef.current.has(idx)) return
+    activesRef.current.delete(idx)
+    setActives(new Set(activesRef.current))
+    // golden 체크
+    const isGolden = goldens.has(idx)
+    const points = isGolden ? 2 : 1
+    if (soundEnabled) playCorrect()
+    scoreRef.current += points
+    setScore(scoreRef.current)
+    // 팝업 효과
+    const pid = popupId.current++
+    setPopups((p) => [...p, { id: pid, slot: idx, points }])
+    setTimeout(() => setPopups((p) => p.filter((v) => v.id !== pid)), 700)
+    // 골든 제거
+    if (isGolden) {
+      setGoldens((g) => { const n = new Set(g); n.delete(idx); return n })
+    }
+    // 해당 두더지 타이머 취소
+    const timer = moleTimers.current.get(idx)
+    if (timer) {
+      clearTimeout(timer)
+      moleTimers.current.delete(idx)
+    }
   }
 
   return (
@@ -207,8 +226,9 @@ export default function WhackAMole() {
                       animate={{ y: 0, opacity: 1 }}
                       exit={{ y: 20, opacity: 0 }}
                       transition={{ duration: 0.15 }}
+                      className={goldens.has(i) ? 'drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]' : ''}
                     >
-                      🐹
+                      {goldens.has(i) ? '⭐' : '🐹'}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -220,7 +240,7 @@ export default function WhackAMole() {
                       animate={{ y: -50, opacity: 0, scale: 1.5 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.6, ease: 'easeOut' }}
-                      className="absolute top-0 left-1/2 -translate-x-1/2 text-lg font-black text-orange-500 pointer-events-none z-10 drop-shadow-md"
+                      className={`absolute top-0 left-1/2 -translate-x-1/2 text-lg font-black pointer-events-none z-10 drop-shadow-md ${p.points >= 2 ? 'text-yellow-500' : 'text-orange-500'}`}
                     >
                       +{p.points}
                     </motion.span>

@@ -6,12 +6,14 @@ import { useScore } from '@/hooks/useScore'
 import { Volume2 } from 'lucide-react'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useSpeech } from '@/hooks/useSpeech'
-import { englishWords, type WordEntry } from '@/data/englishWords'
+import { englishDictionary, type DictEntry } from '@/data/dictionary'
 import { shuffle, pickRandom } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
 
+type EnglishEntry = DictEntry & { en: string }
+
 function generateProblem(wordCount: number) {
-  const [correct, ...distractors] = pickRandom(englishWords, wordCount) as [WordEntry, ...WordEntry[]]
+  const [correct, ...distractors] = pickRandom(englishDictionary, wordCount) as [EnglishEntry, ...EnglishEntry[]]
   const options = shuffle([correct, ...distractors])
   return { correct, options }
 }

@@ -4,7 +4,7 @@ import { ChevronLeft, Bomb, Star, Trophy, AlertTriangle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useGameTimer } from '@/hooks/useGameTimer'
-import { playCorrect } from '@/lib/audio'
+import { playCorrect, playWrong } from '@/lib/audio'
 
 const GAME_TIME = 30
 const BASE_PLAYER_SIZE = 80 // px (desktop)
@@ -32,6 +32,8 @@ export default function DodgePoop() {
   const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
   const [hit, setHit] = useState(false)
+  const [scorePopups, setScorePopups] = useState<{ id: number; x: number; y: number }[]>([])
+  const popupId = useRef(0)
 
   // All game state in refs for rAF loop
   const playerXRef = useRef(0)
@@ -130,6 +132,10 @@ export default function DodgePoop() {
       if (newY > h + poopSize) {
         scoreRef.current += 1
         setScore(scoreRef.current)
+        // +1 팝업 at landing position
+        const pid = popupId.current++
+        setScorePopups((prev) => [...prev, { id: pid, x: p.x, y: h - 20 }])
+        setTimeout(() => setScorePopups((prev) => prev.filter((v) => v.id !== pid)), 700)
         continue
       }
       // AABB collision
@@ -150,10 +156,12 @@ export default function DodgePoop() {
       runningRef.current = false
       clearInterval(timerRef.current)
       clearTimeout(spawnRef.current)
+      if (soundEnabled) playWrong()
       setHit(true)
       setFinished(true)
       poopsRef.current = []
       setRenderPoops([])
+      setScorePopups([])
       return
     }
 
@@ -323,6 +331,20 @@ export default function DodgePoop() {
             onPointerCancel={handlePointerUp}
             className="flex-1 relative mt-2 touch-none select-none overflow-hidden rounded-2xl bg-gradient-to-b from-green-100 to-green-200 border-2 border-green-300"
           >
+            {/* Score popups */}
+            {scorePopups.map((sp) => (
+              <motion.span
+                key={sp.id}
+                initial={{ y: 0, opacity: 1, scale: 1 }}
+                animate={{ y: -40, opacity: 0, scale: 1.4 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="absolute text-sm font-black text-green-500 pointer-events-none z-10 drop-shadow-md"
+                style={{ left: sp.x, top: sp.y, transform: 'translateX(-50%)' }}
+              >
+                +1
+              </motion.span>
+            ))}
+
             {/* Poops */}
             {renderPoops.map((p) => {
               const ps = getSizes().poopSize

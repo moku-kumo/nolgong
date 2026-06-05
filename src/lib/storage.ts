@@ -1,4 +1,4 @@
-const PREFIX = 'smartstudy_'
+const PREFIX = 'nolgong_'
 
 export function load<T>(key: string, fallback: T): T {
   try {

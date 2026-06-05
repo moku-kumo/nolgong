@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, Lock, Clock, Unlock, Target, Bomb, Search, Navigation, Bike } from 'lucide-react'
+import { ChevronLeft, Lock, Clock, Unlock, Target, Bomb, Search, Navigation } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStudyTimeStore, getTodaySeconds, isGameUnlocked, canPlayGame, getRemainingGameSeconds, isTimeLimitOff, getRequiredStudySeconds } from '@/stores/studyTimeStore'
 import SubjectCard from '@/components/SubjectCard'
@@ -11,7 +11,6 @@ const games = [
   { to: '/game/dodge', icon: Bomb, label: '똥 피하기', desc: '피하고 살아남자', gradient: 'bg-gradient-to-br from-amber-400 to-orange-500', iconColor: 'text-white' },
   { to: '/game/spot', icon: Search, label: '틀린그림찾기', desc: '다른 점을 찾아요', gradient: 'bg-gradient-to-br from-pink-400 to-rose-500', iconColor: 'text-white' },
   { to: '/game/maze', icon: Navigation, label: '미로찾기', desc: '출구를 찾아요', gradient: 'bg-gradient-to-br from-cyan-400 to-blue-500', iconColor: 'text-white' },
-  { to: '/game/sewing', icon: Bike, label: '오토바이', desc: '달리고 점프!', gradient: 'bg-gradient-to-br from-lime-400 to-green-500', iconColor: 'text-white' },
 ]
 
 export default function GameHome() {

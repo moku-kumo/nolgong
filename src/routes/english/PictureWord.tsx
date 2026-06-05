@@ -3,14 +3,17 @@ import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
+import { useSpeech } from '@/hooks/useSpeech'
 import { Image } from 'lucide-react'
 import { useSettingsStore } from '@/stores/settingsStore'
-import { englishWords, type WordEntry } from '@/data/englishWords'
+import { englishDictionary, type DictEntry } from '@/data/dictionary'
 import { shuffle, pickRandom } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
 
+type EnglishEntry = DictEntry & { en: string }
+
 function generateProblem(wordCount: number) {
-  const [correct, ...distractors] = pickRandom(englishWords, wordCount) as [WordEntry, ...WordEntry[]]
+  const [correct, ...distractors] = pickRandom(englishDictionary, wordCount) as [EnglishEntry, ...EnglishEntry[]]
   const options = shuffle([correct, ...distractors])
   return { correct, options }
 }
@@ -18,6 +21,7 @@ function generateProblem(wordCount: number) {
 export default function PictureWord() {
   const { timerEnabled, timerSeconds, soundEnabled, englishSettings } = useSettingsStore()
   const { score, total, addCorrect, addWrong } = useScore('english/picture')
+  const { speak } = useSpeech()
   const [problem, setProblem] = useState(() => generateProblem(englishSettings.wordCount))
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
@@ -64,8 +68,14 @@ export default function PictureWord() {
       onTimeUp={handleTimeUp}
     >
       <div className="text-center mb-4">
-        <div className="text-8xl mb-2">{problem.correct.emoji}</div>
-        <p className="text-gray-400 text-sm">이 그림의 영어 이름은?</p>
+        <button
+          onClick={() => speak(problem.correct.en, 'en-US', englishSettings.ttsSpeed)}
+          className="text-8xl mb-2 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+          aria-label="발음 듣기"
+        >
+          {problem.correct.emoji}
+        </button>
+        <p className="text-gray-400 text-sm">그림을 누르면 발음을 들을 수 있어요!</p>
       </div>
 
       {feedback ? (

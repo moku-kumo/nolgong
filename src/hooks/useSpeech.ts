@@ -5,7 +5,7 @@ export function useSpeech() {
   const soundEnabled = useSettingsStore((s) => s.soundEnabled)
 
   const speak = useCallback(
-    (text: string, lang: string = 'ko-KR', rate?: number) => {
+    (text: string, lang: string, rate?: number) => {
       if (!soundEnabled) return
       if (!('speechSynthesis' in window)) return
       window.speechSynthesis.cancel()

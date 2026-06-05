@@ -688,7 +688,7 @@ function SceneSVG({ level, isRight, found, onTap, showHint, lastFoundId }: {
   }, [isRight, onTap, diffs, found])
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-2xl shadow-md border-2 border-white touch-none select-none" style={{ maxHeight: '38vh' }}
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-2xl shadow-md border-2 border-white touch-none select-none max-h-[38vh] md:max-h-[70vh]"
     >
       {/* 모든 요소의 포인터 이벤트를 비활성화 */}
       <g pointerEvents="none">
@@ -922,12 +922,12 @@ export default function SpotDiff() {
         </button>
       </div>
 
-      <main className="flex-1 flex flex-col gap-1.5 items-center justify-center">
-        <div className="w-full max-w-md">
+      <main className="flex-1 flex flex-col md:flex-row gap-1.5 items-center justify-center">
+        <div className="w-full max-w-md md:max-w-none md:flex-1">
           <p className="text-xs text-center text-gray-400 mb-0.5">▼ 원본</p>
           <SceneSVG level={level} isRight={false} found={found} showHint={showHint}/>
         </div>
-        <div className={`w-full max-w-md transition-all ${wrongFlash ? 'ring-4 ring-red-400 rounded-2xl animate-[shake_0.3s_ease-in-out]' : ''}`}>
+        <div className={`w-full max-w-md md:max-w-none md:flex-1 transition-all ${wrongFlash ? 'ring-4 ring-red-400 rounded-2xl animate-[shake_0.3s_ease-in-out]' : ''}`}>
           <p className="text-xs text-center text-gray-400 mb-0.5">▼ 다른 그림을 찾아 터치!</p>
           <SceneSVG level={level} isRight={true} found={found} onTap={handleTap} showHint={showHint} lastFoundId={lastFoundId}/>
         </div>

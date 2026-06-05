@@ -5,27 +5,27 @@ import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
 import { BookOpen } from 'lucide-react'
 import { useSettingsStore } from '@/stores/settingsStore'
-import { koreanWords, type KoreanWordEntry } from '@/data/koreanWords'
+import { dictionary, type DictEntry } from '@/data/dictionary'
 import { shuffle, pickRandom } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
 
-function filterByLength(words: KoreanWordEntry[], wordLength: string): KoreanWordEntry[] {
-  if (wordLength === 'short') return words.filter((w) => w.word.length <= 2)
-  if (wordLength === 'long') return words.filter((w) => w.word.length >= 3)
+function filterByLength(words: DictEntry[], wordLength: string): DictEntry[] {
+  if (wordLength === 'short') return words.filter((w) => w.ko.length <= 2)
+  if (wordLength === 'long') return words.filter((w) => w.ko.length >= 3)
   return words
 }
 
 function generateProblem(wordLength: string, lastWord?: string) {
-  const pool = filterByLength(koreanWords, wordLength)
-  const src = pool.length >= 4 ? pool : koreanWords
-  let correct: KoreanWordEntry
-  let distractors: KoreanWordEntry[]
+  const pool = filterByLength(dictionary, wordLength)
+  const src = pool.length >= 4 ? pool : dictionary
+  let correct: DictEntry
+  let distractors: DictEntry[]
   // 연속 같은 단어 방지
   let attempts = 0
   do {
-    ;[correct, ...distractors] = pickRandom(src, 4) as [KoreanWordEntry, ...KoreanWordEntry[]]
+    ;[correct, ...distractors] = pickRandom(src, 4) as [DictEntry, ...DictEntry[]]
     attempts++
-  } while (correct.word === lastWord && src.length > 1 && attempts < 10)
+  } while (correct.ko === lastWord && src.length > 1 && attempts < 10)
   const options = shuffle([correct, ...distractors])
   return { correct, options }
 }
@@ -40,7 +40,7 @@ export default function ReadWord() {
 
   const next = useCallback(() => {
     const p = generateProblem(koreanSettings.wordLength, lastWordRef.current)
-    lastWordRef.current = p.correct.word
+    lastWordRef.current = p.correct.ko
     setProblem(p)
     setFeedback(null)
     setTimerKey((k) => k + 1)
@@ -48,7 +48,7 @@ export default function ReadWord() {
 
   const handleSelect = (opt: string) => {
     if (feedback) return
-    if (opt === problem.correct.word) {
+    if (opt === problem.correct.ko) {
       if (soundEnabled) playCorrect()
       addCorrect()
       setFeedback('correct')
@@ -90,7 +90,7 @@ export default function ReadWord() {
         <Feedback type={feedback} onDone={next} />
       ) : (
         <OptionGrid
-          options={problem.options.map((o) => o.word)}
+          options={problem.options.map((o) => o.ko)}
           onSelect={handleSelect}
           columns={2}
         />
