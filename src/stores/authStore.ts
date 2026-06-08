@@ -27,6 +27,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       options: {
         redirectTo,
         skipBrowserRedirect: false,
+        queryParams: {
+          prompt: 'select_account',
+        },
       },
     })
   },
