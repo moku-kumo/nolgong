@@ -9,5 +9,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(
   supabaseUrl ?? '',
-  supabaseAnonKey ?? ''
+  supabaseAnonKey ?? '',
+  {
+    auth: {
+      flowType: 'implicit',
+      detectSessionInUrl: true,
+    },
+  }
 )

@@ -1,8 +1,7 @@
-# SmartStudy — 작업 계획서
+# 놀공 — 작업 계획서
 
 > 6세 어린이를 위한 종합 학습 PWA  
-> 모토: **놀면서 학습할 수 있는 앱**  
-> 전신: [SmartGame (smart-plus)](../SmartGame) — 더하기 단일 게임
+> 모토: **놀면서 학습할 수 있는 앱**
 
 ---
 
@@ -10,12 +9,13 @@
 
 | 항목 | 내용 |
 |---|---|
-| 이름 | SmartStudy |
+| 이름 | 놀공 (nolgong) |
 | 대상 | 6세 어린이 (미취학~초1) |
-| 과목 | 수학 · 영어 · 국어 |
+| 과목 | 수학 · 영어 · 국어 · 게임 |
 | 형태 | PWA (모바일 설치, 오프라인 지원) |
 | 배포 | GitHub Pages (GitHub Actions 자동 빌드) |
-| 저장소 | GitHub `SmartStudy` (신규) |
+| 인증 | Google OAuth (Supabase Auth) |
+| 동기화 | Supabase (학습 기록 클라우드 동기화) |
 
 ---
 
@@ -27,77 +27,106 @@
 | 언어 | **TypeScript** | 모드/문제 데이터 타입 안전 |
 | 프레임워크 | **React 18** | 컴포넌트 재사용 (모드/카드/버튼) |
 | 라우팅 | **React Router** | 과목 → 모드 → 게임 화면 |
-| 스타일 | **Tailwind CSS** | 빠른 시안, 6세용 큰 UI 일관성 |
+| 스타일 | **Tailwind CSS v4** | 빠른 시안, 6세용 큰 UI 일관성 |
 | UI 컴포넌트 | **shadcn/ui** | 모달/버튼/시트 등 세련된 기본기 |
 | 애니메이션 | **Framer Motion** | 정답 시 즐거운 피드백 |
 | 아이콘 | **lucide-react** + 이모지 | 가벼움 |
-| 상태 | **Zustand** (로컬 진도/설정) | Redux보다 단순 |
+| 상태 | **Zustand** | Redux보다 단순 |
+| 인증 | **Supabase Auth** | Google OAuth + 세션 관리 |
+| DB/동기화 | **Supabase** | 학습 기록 클라우드 동기화 |
 | 음성 | **Web Speech API (SpeechSynthesis)** | 외부 의존 X |
-| 효과음 | **WebAudio API** | 기존 코드 이식 |
-| 저장소 | **localStorage** | 6세 대상이라 계정 X |
-| PWA | **vite-plugin-pwa** | manifest/SW 자동 생성 |
+| 효과음 | **WebAudio API** | 경량 사운드 |
+| 로컬 저장 | **localStorage** | 오프라인 진도 저장 |
+| PWA | **수동 SW + manifest** | 세밀한 캐시 제어 |
 
 ---
 
-## 3. 디렉토리 구조 (예정)
+## 3. 디렉토리 구조
 
 ```
-SmartStudy/
+nolgong/
 ├── public/
-│   ├── icons/                 # PWA 아이콘
-│   └── images/                # 영어 단어 그림 (SVG/PNG)
+│   ├── 404.html
+│   ├── manifest.webmanifest
+│   ├── sw.js
+│   ├── icons/
+│   └── images/
 ├── src/
 │   ├── main.tsx
-│   ├── App.tsx                # 라우터
+│   ├── App.tsx
+│   ├── index.css
 │   ├── routes/
-│   │   ├── Home.tsx           # 과목 선택 홈
+│   │   ├── Home.tsx
+│   │   ├── Login.tsx
+│   │   ├── ParentDashboard.tsx
 │   │   ├── math/
 │   │   │   ├── MathHome.tsx
 │   │   │   ├── Addition.tsx
-│   │   │   ├── Pattern.tsx
-│   │   │   └── StepPattern.tsx
+│   │   │   ├── BlankFill.tsx
+│   │   │   └── Pattern.tsx
 │   │   ├── english/
 │   │   │   ├── EnglishHome.tsx
 │   │   │   ├── Alphabet.tsx
 │   │   │   ├── PictureWord.tsx
-│   │   │   └── ListenWord.tsx
-│   │   └── korean/
-│   │       ├── KoreanHome.tsx
-│   │       ├── Jamo.tsx       # 자음/모음
-│   │       └── ReadWord.tsx   # 받침없는 단어
+│   │   │   ├── ListenWord.tsx
+│   │   │   └── Phonics.tsx
+│   │   ├── korean/
+│   │   │   ├── KoreanHome.tsx
+│   │   │   ├── Jamo.tsx
+│   │   │   ├── ReadWord.tsx
+│   │   │   └── ReadBatchim.tsx
+│   │   └── game/
+│   │       ├── GameHome.tsx
+│   │       ├── WhackAMole.tsx
+│   │       ├── DodgePoop.tsx
+│   │       ├── SpotDiff.tsx
+│   │       ├── MazeFinder.tsx
+│   │       ├── Sewing.tsx
+│   │       └── BalloonPop.tsx
 │   ├── components/
-│   │   ├── ui/                # shadcn/ui
+│   │   ├── ui/
 │   │   ├── game/
 │   │   │   ├── GameLayout.tsx
 │   │   │   ├── TimerBar.tsx
 │   │   │   ├── ScoreBoard.tsx
 │   │   │   ├── OptionGrid.tsx
 │   │   │   └── Feedback.tsx
-│   │   └── SubjectCard.tsx
+│   │   ├── SubjectCard.tsx
+│   │   ├── SettingsModal.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   └── PageTransition.tsx
 │   ├── hooks/
-│   │   ├── useTimer.ts
+│   │   ├── useGameTimer.ts
 │   │   ├── useScore.ts
-│   │   └── useSpeech.ts
+│   │   ├── useSpeech.ts
+│   │   ├── useStudyTimer.ts
+│   │   └── useTimer.ts
 │   ├── lib/
-│   │   ├── audio.ts           # WebAudio 효과음
-│   │   ├── storage.ts         # localStorage 래퍼
-│   │   └── random.ts          # 문제 생성 유틸
+│   │   ├── audio.ts
+│   │   ├── random.ts
+│   │   ├── storage.ts
+│   │   ├── supabase.ts
+│   │   ├── sync.ts
+│   │   └── utils.ts
 │   ├── data/
 │   │   ├── alphabet.ts
+│   │   ├── dictionary.ts
 │   │   ├── englishWords.ts
+│   │   ├── koreanBatchimWords.ts
 │   │   ├── koreanJamo.ts
-│   │   └── koreanWords.ts
-│   ├── stores/
-│   │   ├── settingsStore.ts
-│   │   └── progressStore.ts
-│   └── styles/
-│       └── globals.css
+│   │   ├── koreanWords.ts
+│   │   └── phonics.ts
+│   └── stores/
+│       ├── authStore.ts
+│       ├── progressStore.ts
+│       ├── settingsStore.ts
+│       ├── statsStore.ts
+│       └── studyTimeStore.ts
+├── .github/workflows/deploy.yml
 ├── index.html
 ├── package.json
-├── tailwind.config.ts
-├── tsconfig.json
 ├── vite.config.ts
-└── README.md
+└── tsconfig.json
 ```
 
 ---
@@ -105,30 +134,43 @@ SmartStudy/
 ## 4. 화면 흐름
 
 ```
-[홈: 과목 선택]
-  ├─ 🔢 수학  → [수학 홈] → ➕ 더하기 / ⬜ 빈칸 / 🧩 패턴
-  ├─ 🔤 영어  → [영어 홈] → 🅰️ 알파벳 / 🖼️ 그림단어 / 🔊 듣기
-  └─ 한글    → [국어 홈] → ㄱㅏ 자모 / 📖 받침없는 단어
-                                      └─ ⚙️ 설정 (난이도/소리/타이머 끄기)
+[로그인] → Google OAuth / 게스트 체험
+  └─ [홈: 과목 선택]
+       ├─ 🔢 수학  → [수학 홈] → ➕ 더하기 / ⬜ 빈칸 / 🧩 패턴
+       ├─ 🔤 영어  → [영어 홈] → 🅰️ 알파벳 / 🖼️ 그림단어 / 🔊 듣기 / 📖 파닉스
+       ├─ 가 국어  → [국어 홈] → ㄱㅏ 자모 / 📖 단어읽기 / 📖 받침읽기
+       ├─ 🎮 게임  → [게임 홈] → 두더지 / 💩피하기 / 틀린그림 / 바느질 / 미로 / 풍선
+       ├─ 📊 부모 대시보드 (학습 통계)
+       └─ ⚙️ 설정 (난이도/소리/타이머)
 ```
 
 ---
 
 ## 5. 학습 모드 상세
 
-### 수학 (기존 이식)
+### 수학
 1. **➕ 더하기** — 1자리 덧셈, 6지선다 (난이도 3단계)
 2. **⬜ 빈칸채우기** — 연속 수열 빈칸
 3. **🧩 패턴채우기** — 등차수열 (5단위 / 임의)
 
-### 영어 (신규)
+### 영어
 4. **🅰️ 알파벳 맞히기** — 대문자↔소문자 매칭
-5. **🖼️ 그림 보고 단어 고르기** — 4지선다 (apple/cat 등 50단어)
+5. **🖼️ 그림 보고 단어 고르기** — 4지선다
 6. **🔊 단어 듣고 고르기** — TTS로 듣고 보기 선택
+7. **📖 파닉스** — 영어 파닉스 학습
 
-### 국어 (신규)
-7. **ㄱㅏ 자음/모음** — 자모 인식 + 음가 듣기
-8. **📖 받침없는 단어 읽기** — 그림+글자 매칭 (가지/나비/모자 등)
+### 국어
+8. **ㄱㅏ 자음/모음** — 자모 인식 + 음가 듣기
+9. **📖 단어읽기** — 그림+글자 매칭 (받침없는 단어)
+10. **📖 받침읽기** — 받침 있는 단어 학습
+
+### 게임 (학습 후 잠금 해제)
+11. **🔨 두더지잡기** — 반응속도 게임
+12. **💩 피하기** — 장애물 회피 게임
+13. **🔍 틀린그림찾기** — 관찰력 게임
+14. **🧵 바느질** — 소근육 발달 게임
+15. **🏃 미로탈출** — 공간지각 게임
+16. **🎈 풍선터뜨리기** — 터치 게임
 
 ---
 
@@ -146,63 +188,54 @@ SmartStudy/
 
 ## 7. PWA / 배포
 
-- `vite-plugin-pwa` (autoUpdate, workbox precache)
-- 아이콘: 192/512/maskable, Apple touch
-- `manifest.webmanifest`: ko, standalone, theme #ff6347
+- 수동 Service Worker (`public/sw.js`, network-first 전략)
+- 아이콘: 192/512/maskable
+- `manifest.webmanifest`: ko, standalone, theme #fff7ed
 - 오프라인: 정적 자산 + 단어 데이터 모두 캐시
 - GitHub Pages 자동 배포 (GitHub Actions, main → production)
+- Supabase 환경변수는 GitHub Secrets로 관리
 
 ---
 
-## 8. 단계별 작업 순서
+## 8. 완료된 작업
 
-### Phase 0 — 환경 셋업
-- [ ] Node.js LTS 설치 (winget)
-- [ ] `npm create vite@latest SmartStudy -- --template react-ts`
-- [ ] Tailwind / shadcn-ui / Router / Zustand / Framer Motion / vite-plugin-pwa 설치
-- [ ] GitHub 신규 레포 생성 + 연결
-- [ ] GitHub Actions 워크플로우 설정 → GitHub Pages 첫 배포 확인
-
-### Phase 1 — 골격 (1차 PR)
-- [ ] 레이아웃, 과목 선택 홈
-- [ ] 라우팅 + 공통 컴포넌트 (GameLayout/Timer/Score/OptionGrid/Feedback)
-- [ ] WebAudio 효과음, useTimer, useScore 훅
-- [ ] 설정 모달 (글로벌)
-
-### Phase 2 — 수학 이식
-- [ ] 더하기, 빈칸, 패턴 3종 React로 포팅
-- [ ] 기존 localStorage 키 마이그레이션 X (새 스키마)
-
-### Phase 3 — 영어
-- [ ] 알파벳 데이터 + 모드
-- [ ] 그림단어 (이모지/SVG) 50개
-- [ ] TTS 듣기 모드
-
-### Phase 4 — 국어
-- [ ] 자모 데이터 + 모드 (음가 TTS)
-- [ ] 받침없는 단어 30개 + 그림
-
-### Phase 5 — 마감
-- [ ] PWA 아이콘/스플래시
-- [ ] 진도 저장(별 스티커 보상)
-- [ ] 접근성 (aria-label, 키보드 포커스)
-- [ ] README + 스크린샷
+- [x] 환경 셋업 (Vite + React + TS + Tailwind v4 + shadcn/ui)
+- [x] 라우팅 + 공통 컴포넌트 (GameLayout/Timer/Score/OptionGrid/Feedback)
+- [x] WebAudio 효과음, useTimer, useScore 훅
+- [x] 설정 모달
+- [x] 수학 3종 (더하기/빈칸/패턴)
+- [x] 영어 4종 (알파벳/그림단어/듣기/파닉스)
+- [x] 국어 3종 (자모/단어읽기/받침읽기)
+- [x] 게임 6종 (두더지/똥피하기/틀린그림/바느질/미로/풍선)
+- [x] Google OAuth 로그인 (Supabase)
+- [x] 학습 기록 클라우드 동기화
+- [x] 부모 대시보드
+- [x] 학습 시간 기반 게임 잠금 시스템
+- [x] PWA (manifest + SW + 오프라인)
+- [x] GitHub Actions 자동 배포
 
 ---
 
 ## 9. 향후 확장 (백로그)
 
-- 부모 모드: 학습 통계 대시보드
-- 일일 미션 / 연속 학습 보상
 - 다크모드
-- 뺄셈/곱셈 / 영어 파닉스 / 한글 받침 단어
-- 진도 클라우드 동기화 (계정 도입 시, 외부 BaaS 활용)
+- 뺄셈/곱셈
+- 영어 문장 학습
+- 일일 미션 / 연속 학습 보상
+- 접근성 개선 (aria-label, 키보드 포커스)
 
 ---
 
-## 10. 즉시 다음 액션
+## 10. 개발 환경
 
-1. **Node.js 설치** (`winget install OpenJS.NodeJS.LTS`)
-2. Vite 프로젝트 스캐폴딩
-3. 의존성 설치 + 기본 라우팅 + 홈 화면
-4. GitHub/Vercel 연결
+```bash
+npm install        # 의존성 설치
+npm run dev        # 로컬 개발 서버
+npm run build      # 프로덕션 빌드
+```
+
+`.env` 파일:
+```
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```

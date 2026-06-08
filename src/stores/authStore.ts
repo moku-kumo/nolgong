@@ -20,10 +20,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   guest: false,
 
   signInWithGoogle: async () => {
+    const redirectTo = window.location.origin + import.meta.env.BASE_URL
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + import.meta.env.BASE_URL,
+        redirectTo,
+        skipBrowserRedirect: false,
       },
     })
   },
@@ -38,9 +41,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   initialize: () => {
-    // 현재 세션 가져오기
+    // 현재 세션 가져오기 (implicit flow: URL hash에서 토큰을 자동 감지)
     supabase.auth.getSession().then(({ data: { session } }) => {
       set({ session, user: session?.user ?? null, loading: false })
+      // URL hash에 남은 토큰 파라미터 정리
+      if (window.location.hash.includes('access_token')) {
+        window.history.replaceState({}, '', window.location.pathname)
+      }
     })
 
     // 인증 상태 변경 구독
