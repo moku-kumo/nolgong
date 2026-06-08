@@ -37,10 +37,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     await supabase.auth.signOut()
     set({ user: null, session: null, guest: false })
-    // URL에 남은 토큰 hash 제거
-    if (window.location.hash) {
-      window.history.replaceState({}, '', window.location.pathname)
-    }
+    // 페이지 리로드로 브라우저 OAuth 캐시 초기화
+    window.location.replace(window.location.origin + import.meta.env.BASE_URL + 'login')
   },
 
   enterAsGuest: () => {
