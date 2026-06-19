@@ -265,7 +265,6 @@ export const dictionary: DictEntry[] = [
   { ko: '입', en: 'mouth', emoji: '👄' },
 
   // ── 기타 ──
-  { ko: '둥지', en: 'nest', emoji: '🪺' },
   { ko: '선물', en: 'gift', emoji: '🎁' },
   { ko: '섬', en: 'island', emoji: '🏝️' },
   { ko: '잼', en: 'jam', emoji: '🍯' },

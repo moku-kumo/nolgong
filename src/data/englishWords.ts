@@ -43,7 +43,6 @@ export const englishWords: WordEntry[] = [
   { en: 'key', ko: '열쇠', emoji: '🔑' },
   { en: 'lemon', ko: '레몬', emoji: '🍋' },
   { en: 'milk', ko: '우유', emoji: '🥛' },
-  { en: 'nest', ko: '둥지', emoji: '🪺' },
   { en: 'owl', ko: '부엉이', emoji: '🦉' },
   { en: 'pizza', ko: '피자', emoji: '🍕' },
   { en: 'rain', ko: '비', emoji: '🌧️' },
