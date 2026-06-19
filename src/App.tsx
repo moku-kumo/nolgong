@@ -9,6 +9,7 @@ import MathHome from '@/routes/math/MathHome'
 import Addition from '@/routes/math/Addition'
 import BlankFill from '@/routes/math/BlankFill'
 import Pattern from '@/routes/math/Pattern'
+import ClockReading from '@/routes/math/ClockReading'
 import EnglishHome from '@/routes/english/EnglishHome'
 import Alphabet from '@/routes/english/Alphabet'
 import PictureWord from '@/routes/english/PictureWord'
@@ -22,6 +23,7 @@ import DodgePoop from '@/routes/game/DodgePoop'
 import SpotDiff from '@/routes/game/SpotDiff'
 import MazeFinder from '@/routes/game/MazeFinder'
 import Sewing from '@/routes/game/Sewing'
+import MemoryMatch from '@/routes/game/MemoryMatch'
 import ParentDashboard from '@/routes/ParentDashboard'
 import Phonics from '@/routes/english/Phonics'
 
@@ -48,6 +50,7 @@ function App() {
         <Route path="/math/addition" element={<ProtectedRoute><Addition /></ProtectedRoute>} />
         <Route path="/math/blank" element={<ProtectedRoute><BlankFill /></ProtectedRoute>} />
         <Route path="/math/pattern" element={<ProtectedRoute><Pattern /></ProtectedRoute>} />
+        <Route path="/math/clock" element={<ProtectedRoute><ClockReading /></ProtectedRoute>} />
         <Route path="/english" element={<ProtectedRoute><EnglishHome /></ProtectedRoute>} />
         <Route path="/english/alphabet" element={<ProtectedRoute><Alphabet /></ProtectedRoute>} />
         <Route path="/english/picture" element={<ProtectedRoute><PictureWord /></ProtectedRoute>} />
@@ -61,6 +64,7 @@ function App() {
         <Route path="/game/spot" element={<ProtectedRoute><SpotDiff /></ProtectedRoute>} />
         <Route path="/game/maze" element={<ProtectedRoute><MazeFinder /></ProtectedRoute>} />
         <Route path="/game/sewing" element={<ProtectedRoute><Sewing /></ProtectedRoute>} />
+        <Route path="/game/memory" element={<ProtectedRoute><MemoryMatch /></ProtectedRoute>} />
         <Route path="/parent" element={<ProtectedRoute><ParentDashboard /></ProtectedRoute>} />
         <Route path="/english/phonics" element={<ProtectedRoute><Phonics /></ProtectedRoute>} />
       </Routes>

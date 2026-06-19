@@ -64,6 +64,8 @@ export default function ParentDashboard() {
   const [pinInput, setPinInput] = useState('')
   const [error, setError] = useState(false)
   const parentPin = useSettingsStore(s => s.parentPin)
+  const requiredStudyMinutes = useSettingsStore(s => s.requiredStudyMinutes)
+  const setRequiredStudyMinutes = useSettingsStore(s => s.setRequiredStudyMinutes)
 
   const checkAnswer = useCallback(() => {
     if (pinInput === parentPin) {
@@ -172,8 +174,27 @@ export default function ParentDashboard() {
           <p className="text-center text-gray-400 mt-8">아직 학습 기록이 없어요</p>
         )}
 
-        {/* PIN 변경 */}
+        {/* 게임 해금 시간 */}
         <div className="mt-8 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <h3 className="text-sm font-bold text-gray-700 mb-3">게임 해금 시간</h3>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-500">공부 후 게임 잠금 해제</span>
+            <span className="text-sm font-semibold text-indigo-500">{requiredStudyMinutes}분</span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={60}
+            step={1}
+            value={requiredStudyMinutes}
+            onChange={(e) => setRequiredStudyMinutes(Number(e.target.value))}
+            className="w-full accent-indigo-500"
+          />
+          <p className="text-xs text-gray-400 mt-2">설정한 시간만큼 공부해야 게임을 할 수 있어요</p>
+        </div>
+
+        {/* PIN 변경 */}
+        <div className="mt-4 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
           <h3 className="text-sm font-bold text-gray-700 mb-3">부모 PIN 변경</h3>
           <div className="flex items-center gap-3">
             <input

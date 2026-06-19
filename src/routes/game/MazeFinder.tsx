@@ -219,12 +219,21 @@ export default function MazeFinder() {
   const wallLines = useMemo(() => {
     if (!maze.length) return []
     const lines: React.ReactElement[] = []
+    const hw = wallWidth / 2 // 벽 절반 두께
     maze.forEach((row, r) => {
       row.forEach((cell, c) => {
         const x = c * cellSize, y = r * cellSize
-        if (!(cell & S) && r < rows - 1)
+        // 북쪽 벽 (첫 행만)
+        if (r === 0 && !(cell & N))
+          lines.push(<line key={`n${r}_${c}`} x1={x} y1={hw} x2={x + cellSize} y2={hw} stroke={wallColor} strokeWidth={wallWidth} strokeLinecap="round" />)
+        // 서쪽 벽 (첫 열만)
+        if (c === 0 && !(cell & W))
+          lines.push(<line key={`w${r}_${c}`} x1={hw} y1={y} x2={hw} y2={y + cellSize} stroke={wallColor} strokeWidth={wallWidth} strokeLinecap="round" />)
+        // 남쪽 벽
+        if (!(cell & S))
           lines.push(<line key={`s${r}_${c}`} x1={x} y1={y + cellSize} x2={x + cellSize} y2={y + cellSize} stroke={wallColor} strokeWidth={wallWidth} strokeLinecap="round" />)
-        if (!(cell & E) && c < cols - 1)
+        // 동쪽 벽
+        if (!(cell & E))
           lines.push(<line key={`e${r}_${c}`} x1={x + cellSize} y1={y} x2={x + cellSize} y2={y + cellSize} stroke={wallColor} strokeWidth={wallWidth} strokeLinecap="round" />)
       })
     })
@@ -303,7 +312,7 @@ export default function MazeFinder() {
             <svg
               width={mazeW}
               height={mazeH}
-              style={{ display: 'block', borderRadius: 8, border: `${wallWidth * 2}px solid ${wallColor}`, touchAction: 'none' }}
+              style={{ display: 'block', borderRadius: 8, touchAction: 'none' }}
               onTouchStart={onSvgTouchStart}
               onTouchEnd={onSvgTouchEnd}
             >

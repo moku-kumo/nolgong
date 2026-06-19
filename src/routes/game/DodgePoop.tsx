@@ -51,6 +51,9 @@ export default function DodgePoop() {
 
   // Movement: track which direction is being held
   const moveDir = useRef(0) // -1 left, 0 none, 1 right
+  const [movingDir, setMovingDir] = useState(0) // for render: -1 left, 0 idle, 1 right
+  const [walkFrame, setWalkFrame] = useState(0) // 0~3 sprite frame
+  const walkIntervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
   // Touch drag tracking
   const touchStartX = useRef(0)
   const playerStartX = useRef(0)
@@ -113,6 +116,9 @@ export default function DodgePoop() {
         Math.min(w - playerSize / 2, playerXRef.current + moveDir.current * playerSpeed),
       )
       setPlayerX(playerXRef.current)
+      setMovingDir(moveDir.current)
+    } else {
+      setMovingDir(0)
     }
 
     const px = playerXRef.current // center x
@@ -222,8 +228,23 @@ export default function DodgePoop() {
       clearInterval(timerRef.current)
       clearTimeout(spawnRef.current)
       cancelAnimationFrame(frameRef.current!)
+      clearInterval(walkIntervalRef.current)
     }
   }, [])
+
+  // Walk frame animation cycle
+  useEffect(() => {
+    if (movingDir !== 0) {
+      setWalkFrame(0)
+      walkIntervalRef.current = setInterval(() => {
+        setWalkFrame((f) => (f + 1) % 4)
+      }, 120)
+      return () => clearInterval(walkIntervalRef.current)
+    } else {
+      clearInterval(walkIntervalRef.current)
+      setWalkFrame(0)
+    }
+  }, [movingDir])
 
   // Touch: drag to move player directly
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -240,12 +261,16 @@ export default function DodgePoop() {
     const { playerSize } = getSizes()
     const dx = e.clientX - touchStartX.current
     const newX = Math.max(playerSize / 2, Math.min(w - playerSize / 2, playerStartX.current + dx))
+    const prevX = playerXRef.current
     playerXRef.current = newX
     setPlayerX(newX)
+    if (Math.abs(newX - prevX) > 0.5) setMovingDir(newX > prevX ? 1 : -1)
+    else setMovingDir(0)
   }
 
   const handlePointerUp = () => {
     dragging.current = false
+    setMovingDir(0)
   }
 
   // Keyboard: hold arrow keys
@@ -369,22 +394,34 @@ export default function DodgePoop() {
               )
             })}
 
-            {/* Player - 뽀로로 */}
+            {/* Player - 뽀로로 (스프라이트 시트 애니메이션) */}
             {(() => {
               const ps = getSizes().playerSize
+              // 스프라이트: 5열 1행 [왼쪽1, 왼쪽2, 정면, 오른쪽1, 오른쪽2]
+              let spriteCol: number
+              if (movingDir === -1) {
+                spriteCol = walkFrame % 2 === 0 ? 0 : 1 // 왼쪽 프레임 교대
+              } else if (movingDir === 1) {
+                spriteCol = walkFrame % 2 === 0 ? 3 : 4 // 오른쪽 프레임 교대
+              } else {
+                spriteCol = 2 // 정면
+              }
+              const bgX = spriteCol * (100 / 4) // 5프레임: 0%, 25%, 50%, 75%, 100%
+              const spriteW = ps * 5
+              const spriteH = ps * 1.8 // 174:314 비율
               return (
-                <img
-                  src={import.meta.env.BASE_URL + 'images/pororo.png'}
-                  alt="뽀로로"
-                  className="absolute pointer-events-none"
-                  draggable={false}
+                <div
+                  className="absolute pointer-events-none overflow-hidden"
                   style={{
                     left: playerX,
-                    bottom: 8,
+                    bottom: -4,
                     width: ps,
-                    height: ps,
-                    objectFit: 'contain',
+                    height: spriteH,
                     transform: 'translateX(-50%)',
+                    backgroundImage: `url(${import.meta.env.BASE_URL}images/pororo_sprite.png)`,
+                    backgroundSize: `${spriteW}px ${spriteH}px`,
+                    backgroundPosition: `${-spriteCol * ps}px 0`,
+                    backgroundRepeat: 'no-repeat',
                   }}
                 />
               )

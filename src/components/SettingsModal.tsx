@@ -1,6 +1,6 @@
 import { useSettingsStore, type AdditionDifficulty, type AlphabetMode, type JamoFilter } from '@/stores/settingsStore'
 import { useLocation } from 'react-router-dom'
-import { X, Volume2, Timer, Gauge, Pen, Shapes, Type, BookOpen, Headphones, Gamepad2 } from 'lucide-react'
+import { X, Volume2, Timer, Gauge, Pen, Shapes, Type, BookOpen, Headphones } from 'lucide-react'
 
 interface SettingsModalProps {
   open: boolean
@@ -129,27 +129,6 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
               />
             </div>
           )}
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-purple-50 flex items-center justify-center">
-                <Gamepad2 size={18} className="text-purple-500" />
-              </div>
-              <span className="text-[15px] font-medium text-gray-700">게임 해금 시간</span>
-            </div>
-            <span className="text-sm font-semibold text-indigo-500">{store.requiredStudyMinutes}분</span>
-          </div>
-          <div className="pl-12">
-            <input
-              type="range"
-              min={1}
-              max={60}
-              step={1}
-              value={store.requiredStudyMinutes}
-              onChange={(e) => store.setRequiredStudyMinutes(Number(e.target.value))}
-              className="w-full accent-indigo-500"
-            />
-          </div>
 
           {/* 수학: 더하기 */}
           {(isAddition || (isMath && !isBlank && !isPattern)) && (

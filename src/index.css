@@ -140,3 +140,13 @@
   60% { transform: translateX(-4px); }
   80% { transform: translateX(4px); }
 }
+
+@keyframes walk {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  25% { translate: 0 -4px; rotate: -6deg; }
+  75% { translate: 0 -4px; rotate: 6deg; }
+}
+
+.animate-walk {
+  animation: walk 0.25s ease-in-out infinite;
+}
