@@ -9,6 +9,8 @@ export const additionRanges = {
   hard: { min: 0, max: 20 },
 } as const
 
+export type MultiplicationDifficulty = 'easy' | 'normal' | 'hard'
+
 export interface PatternSettings {
   minNum: number
   maxNum: number
@@ -46,6 +48,7 @@ interface SettingsState {
 
   // 수학
   additionDifficulty: AdditionDifficulty
+  multiplicationDifficulty: MultiplicationDifficulty
   patternSettings: PatternSettings
   stepPatternSettings: StepPatternSettings
 
@@ -62,6 +65,7 @@ interface SettingsState {
   setRequiredStudyMinutes: (v: number) => void
   setParentPin: (v: string) => void
   setAdditionDifficulty: (v: AdditionDifficulty) => void
+  setMultiplicationDifficulty: (v: MultiplicationDifficulty) => void
   setPatternSettings: (v: Partial<PatternSettings>) => void
   setStepPatternSettings: (v: Partial<StepPatternSettings>) => void
   setEnglishSettings: (v: Partial<EnglishSettings>) => void
@@ -81,6 +85,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   parentPin: load('parentPin', '0000'),
 
   additionDifficulty: load<AdditionDifficulty>('additionDifficulty', 'easy'),
+  multiplicationDifficulty: load<MultiplicationDifficulty>('multiplicationDifficulty', 'easy'),
   patternSettings: load<PatternSettings>('patternSettings', defaultPatternSettings),
   stepPatternSettings: load<StepPatternSettings>('stepPatternSettings', defaultStepPatternSettings),
   englishSettings: load<EnglishSettings>('englishSettings', defaultEnglishSettings),
@@ -93,6 +98,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setParentPin: (v) => { save('parentPin', v); set({ parentPin: v }) },
 
   setAdditionDifficulty: (v) => { save('additionDifficulty', v); set({ additionDifficulty: v }) },
+  setMultiplicationDifficulty: (v) => { save('multiplicationDifficulty', v); set({ multiplicationDifficulty: v }) },
   setPatternSettings: (v) => {
     const merged = { ...get().patternSettings, ...v }
     save('patternSettings', merged); set({ patternSettings: merged })
