@@ -125,7 +125,7 @@ export default function DodgePoop() {
       )
       setPlayerX(playerXRef.current)
       updateMovingDir(moveDir.current)
-    } else {
+    } else if (!dragging.current) {
       updateMovingDir(0)
     }
 
