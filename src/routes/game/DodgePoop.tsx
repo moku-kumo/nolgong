@@ -406,7 +406,6 @@ export default function DodgePoop() {
               } else {
                 spriteCol = 2 // 정면
               }
-              const bgX = spriteCol * (100 / 4) // 5프레임: 0%, 25%, 50%, 75%, 100%
               const spriteW = ps * 5
               const spriteH = ps * 1.8 // 174:314 비율
               return (
