@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, Calendar, Target, Clock, TrendingUp, Lock } from 'lucide-react'
+import { ChevronLeft, Calendar, Target, Clock, TrendingUp, Lock, LogOut } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useStatsStore, getSessionsByDate, getRecentDays, MODE_NAMES, type SessionRecord } from '@/stores/statsStore'
 import { useStudyTimeStore } from '@/stores/studyTimeStore'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useAuthStore } from '@/stores/authStore'
 
 function DaySummary({ date, sessions }: { date: string; sessions: SessionRecord[] }) {
   const totalCorrect = sessions.reduce((s, r) => s + r.correct, 0)
@@ -207,6 +208,17 @@ export default function ParentDashboard() {
             />
           </div>
           <p className="text-xs text-gray-400 mt-2">게임 시간제한 해제 및 학습 통계 접근에 사용됩니다</p>
+        </div>
+
+        {/* 로그아웃 */}
+        <div className="mt-4">
+          <button
+            onClick={() => useAuthStore.getState().signOut()}
+            className="w-full py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold transition-colors flex items-center justify-center gap-2"
+          >
+            <LogOut size={18} />
+            로그아웃
+          </button>
         </div>
       </main>
     </div>

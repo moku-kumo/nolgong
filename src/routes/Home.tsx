@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { Settings, BarChart3, LogOut, Calculator, Gamepad2, Trophy, Clock, Flame } from 'lucide-react'
+import { Settings, BarChart3, Calculator, Gamepad2, Trophy, Clock, Flame, Share2 } from 'lucide-react'
 import { useStudyTimeStore, getTodaySeconds, isGameUnlocked, canPlayGame, getRemainingGameSeconds, getRequiredStudySeconds } from '@/stores/studyTimeStore'
-import { useAuthStore } from '@/stores/authStore'
 import SettingsModal from '@/components/SettingsModal'
 
 // 한글 '가' 아이콘
@@ -61,8 +60,20 @@ export default function Home() {
   const mins = Math.floor(todaySeconds / 60)
   const progress = Math.min(100, (todaySeconds / required) * 100)
   const remMins = Math.floor(remainingGame / 60)
-  const user = useAuthStore((s) => s.user)
-  const signOut = useAuthStore((s) => s.signOut)
+
+  const handleShare = async () => {
+    const shareData = {
+      title: '놀공 - 놀면서 공부하자!',
+      text: '우리 아이 학습 앱 놀공! 수학, 한글, 영어를 게임처럼 재미있게 배워요 🎮📚',
+      url: 'https://moku-kumo.github.io/nolgong/',
+    }
+    if (navigator.share) {
+      try { await navigator.share(shareData) } catch { /* 취소 */ }
+    } else {
+      await navigator.clipboard.writeText(shareData.url)
+      alert('링크가 복사되었어요!')
+    }
+  }
 
   return (
     <div className="min-h-dvh bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/40 relative">
@@ -79,11 +90,9 @@ export default function Home() {
             <span className="text-[17px] font-bold text-gray-900">놀공</span>
           </div>
           <div className="flex items-center gap-0.5">
-            {user && (
-              <button onClick={signOut} className="p-2.5 rounded-xl hover:bg-gray-100/80 transition-colors" aria-label="로그아웃">
-                <LogOut size={20} className="text-gray-400" />
-              </button>
-            )}
+            <button onClick={handleShare} className="p-2.5 rounded-xl hover:bg-gray-100/80 transition-colors" aria-label="공유">
+              <Share2 size={20} className="text-gray-400" />
+            </button>
             <button onClick={() => setSettingsOpen(true)} className="p-2.5 rounded-xl hover:bg-gray-100/80 transition-colors" aria-label="설정">
               <Settings size={20} className="text-gray-400" />
             </button>
