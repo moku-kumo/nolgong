@@ -10,6 +10,7 @@ export const additionRanges = {
 } as const
 
 export type MultiplicationDifficulty = 'easy' | 'normal' | 'hard'
+export type ClockDifficulty = 'easy' | 'normal' | 'hard'
 
 export interface PatternSettings {
   minNum: number
@@ -49,6 +50,7 @@ interface SettingsState {
   // 수학
   additionDifficulty: AdditionDifficulty
   multiplicationDifficulty: MultiplicationDifficulty
+  clockDifficulty: ClockDifficulty
   patternSettings: PatternSettings
   stepPatternSettings: StepPatternSettings
 
@@ -66,6 +68,7 @@ interface SettingsState {
   setParentPin: (v: string) => void
   setAdditionDifficulty: (v: AdditionDifficulty) => void
   setMultiplicationDifficulty: (v: MultiplicationDifficulty) => void
+  setClockDifficulty: (v: ClockDifficulty) => void
   setPatternSettings: (v: Partial<PatternSettings>) => void
   setStepPatternSettings: (v: Partial<StepPatternSettings>) => void
   setEnglishSettings: (v: Partial<EnglishSettings>) => void
@@ -86,6 +89,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   additionDifficulty: load<AdditionDifficulty>('additionDifficulty', 'easy'),
   multiplicationDifficulty: load<MultiplicationDifficulty>('multiplicationDifficulty', 'easy'),
+  clockDifficulty: load<ClockDifficulty>('clockDifficulty', 'normal'),
   patternSettings: load<PatternSettings>('patternSettings', defaultPatternSettings),
   stepPatternSettings: load<StepPatternSettings>('stepPatternSettings', defaultStepPatternSettings),
   englishSettings: load<EnglishSettings>('englishSettings', defaultEnglishSettings),
@@ -99,6 +103,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   setAdditionDifficulty: (v) => { save('additionDifficulty', v); set({ additionDifficulty: v }) },
   setMultiplicationDifficulty: (v) => { save('multiplicationDifficulty', v); set({ multiplicationDifficulty: v }) },
+  setClockDifficulty: (v) => { save('clockDifficulty', v); set({ clockDifficulty: v }) },
   setPatternSettings: (v) => {
     const merged = { ...get().patternSettings, ...v }
     save('patternSettings', merged); set({ patternSettings: merged })

@@ -1,4 +1,4 @@
-import { useSettingsStore, type AdditionDifficulty, type AlphabetMode, type JamoFilter } from '@/stores/settingsStore'
+import { useSettingsStore, type AdditionDifficulty, type MultiplicationDifficulty, type ClockDifficulty, type AlphabetMode, type JamoFilter } from '@/stores/settingsStore'
 import { useLocation } from 'react-router-dom'
 import { X, Volume2, Timer, Gauge, Pen, Shapes, Type, BookOpen, Headphones } from 'lucide-react'
 
@@ -66,8 +66,10 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
 
   const isMath = path.includes('/math')
   const isAddition = path.includes('/addition')
+  const isMultiplication = path.includes('/multiplication')
   const isBlank = path.includes('/blank')
   const isPattern = path.includes('/pattern')
+  const isClock = path.includes('/clock')
   const isEnglish = path.includes('/english')
   const isAlphabet = path.includes('/alphabet')
   const isPicture = path.includes('/picture')
@@ -131,7 +133,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
           )}
 
           {/* 수학: 더하기 */}
-          {(isAddition || (isMath && !isBlank && !isPattern)) && (
+          {(isAddition || (isMath && !isMultiplication && !isBlank && !isPattern && !isClock)) && (
             <div className="border-t border-gray-100 pt-4">
               <SectionLabel icon={Gauge} label="더하기 난이도" />
               <SegmentButton<AdditionDifficulty>
@@ -146,8 +148,24 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
             </div>
           )}
 
+          {/* 수학: 곱하기 */}
+          {(isMultiplication || (isMath && !isAddition && !isBlank && !isPattern && !isClock)) && (
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Gauge} label="곱하기 난이도" />
+              <SegmentButton<MultiplicationDifficulty>
+                options={[
+                  { value: 'easy', label: '쉬움 (2~5단)' },
+                  { value: 'normal', label: '보통 (2~9단)' },
+                  { value: 'hard', label: '어려움 (×12까지)' },
+                ]}
+                value={store.multiplicationDifficulty}
+                onChange={store.setMultiplicationDifficulty}
+              />
+            </div>
+          )}
+
           {/* 수학: 빈칸채우기 */}
-          {(isBlank || (isMath && !isAddition && !isPattern)) && (
+          {(isBlank || (isMath && !isAddition && !isMultiplication && !isPattern && !isClock)) && (
             <div className="border-t border-gray-100 pt-4">
               <SectionLabel icon={Pen} label="빈칸채우기" />
               <div className="space-y-3">
@@ -172,7 +190,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
           )}
 
           {/* 수학: 패턴채우기 */}
-          {(isPattern || (isMath && !isAddition && !isBlank)) && (
+          {(isPattern || (isMath && !isAddition && !isMultiplication && !isBlank && !isClock)) && (
             <div className="border-t border-gray-100 pt-4">
               <SectionLabel icon={Shapes} label="패턴채우기" />
               <SegmentButton<'easy' | 'hard'>
@@ -192,6 +210,22 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
                 <span className="text-sm text-gray-400">최대 숫자: {store.stepPatternSettings.maxNum}</span>
                 <input type="range" min={20} max={100} step={10} value={store.stepPatternSettings.maxNum} onChange={(e) => store.setStepPatternSettings({ maxNum: Number(e.target.value) })} className="w-full mt-1 accent-indigo-500" />
               </div>
+            </div>
+          )}
+
+          {/* 수학: 시계 읽기 */}
+          {(isClock || (isMath && !isAddition && !isMultiplication && !isBlank && !isPattern)) && (
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Gauge} label="시계 난이도" />
+              <SegmentButton<ClockDifficulty>
+                options={[
+                  { value: 'easy', label: '쉬움 (정각)' },
+                  { value: 'normal', label: '보통 (30분)' },
+                  { value: 'hard', label: '어려움 (5분)' },
+                ]}
+                value={store.clockDifficulty}
+                onChange={store.setClockDifficulty}
+              />
             </div>
           )}
 

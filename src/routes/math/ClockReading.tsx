@@ -8,16 +8,25 @@ import { playCorrect, playWrong } from '@/lib/audio'
 import { Clock } from 'lucide-react'
 import { motion } from 'framer-motion'
 
-// 정시 또는 30분 단위로 문제 생성
-function generateProblem() {
+export type ClockDifficulty = 'easy' | 'normal' | 'hard'
+
+// 난이도별 분 단위
+const minuteOptions: Record<ClockDifficulty, number[]> = {
+  easy: [0],                                    // 정각만
+  normal: [0, 30],                              // 30분 단위
+  hard: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], // 5분 단위
+}
+
+function generateProblem(difficulty: ClockDifficulty) {
   const hour = randInt(1, 12)
-  const minute = [0, 30][randInt(0, 1)]
+  const mins = minuteOptions[difficulty]
+  const minute = mins[randInt(0, mins.length - 1)]
   const answer = formatTime(hour, minute)
 
   const options = new Set<string>([answer])
   while (options.size < 4) {
     const wH = randInt(1, 12)
-    const wM = [0, 30][randInt(0, 1)]
+    const wM = mins[randInt(0, mins.length - 1)]
     const wrong = formatTime(wH, wM)
     if (wrong !== answer) options.add(wrong)
   }
@@ -109,17 +118,17 @@ function AnalogClock({ hour, minute }: { hour: number; minute: number }) {
 }
 
 export default function ClockReading() {
-  const { timerEnabled, timerSeconds, soundEnabled } = useSettingsStore()
+  const { timerEnabled, timerSeconds, soundEnabled, clockDifficulty } = useSettingsStore()
   const { score, total, addCorrect, addWrong } = useScore('math/clock')
-  const [problem, setProblem] = useState(() => generateProblem())
+  const [problem, setProblem] = useState(() => generateProblem(clockDifficulty))
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
 
   const next = useCallback(() => {
-    setProblem(generateProblem())
+    setProblem(generateProblem(clockDifficulty))
     setFeedback(null)
     setTimerKey((k) => k + 1)
-  }, [])
+  }, [clockDifficulty])
 
   const handleSelect = (opt: string) => {
     if (feedback) return
