@@ -52,8 +52,16 @@ export default function DodgePoop() {
   // Movement: track which direction is being held
   const moveDir = useRef(0) // -1 left, 0 none, 1 right
   const [movingDir, setMovingDir] = useState(0) // for render: -1 left, 0 idle, 1 right
+  const movingDirRef = useRef(0)
   const [walkFrame, setWalkFrame] = useState(0) // 0~3 sprite frame
   const walkIntervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
+
+  const updateMovingDir = (dir: number) => {
+    if (movingDirRef.current !== dir) {
+      movingDirRef.current = dir
+      setMovingDir(dir)
+    }
+  }
   // Touch drag tracking
   const touchStartX = useRef(0)
   const playerStartX = useRef(0)
@@ -116,9 +124,9 @@ export default function DodgePoop() {
         Math.min(w - playerSize / 2, playerXRef.current + moveDir.current * playerSpeed),
       )
       setPlayerX(playerXRef.current)
-      setMovingDir(moveDir.current)
+      updateMovingDir(moveDir.current)
     } else {
-      setMovingDir(0)
+      updateMovingDir(0)
     }
 
     const px = playerXRef.current // center x
@@ -265,14 +273,14 @@ export default function DodgePoop() {
     playerXRef.current = newX
     setPlayerX(newX)
     const delta = newX - prevX
-    if (Math.abs(delta) > 0.3) setMovingDir(delta > 0 ? 1 : -1)
+    if (Math.abs(delta) > 0.3) updateMovingDir(delta > 0 ? 1 : -1)
   }
 
   const handlePointerUp = () => {
     dragging.current = false
     // 약간의 딜레이 후 정면으로 복귀 (부드럽게)
     setTimeout(() => {
-      if (!dragging.current) setMovingDir(0)
+      if (!dragging.current) updateMovingDir(0)
     }, 100)
   }
 
