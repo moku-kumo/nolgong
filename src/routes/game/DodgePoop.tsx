@@ -264,13 +264,16 @@ export default function DodgePoop() {
     const prevX = playerXRef.current
     playerXRef.current = newX
     setPlayerX(newX)
-    if (Math.abs(newX - prevX) > 0.5) setMovingDir(newX > prevX ? 1 : -1)
-    else setMovingDir(0)
+    const delta = newX - prevX
+    if (Math.abs(delta) > 0.3) setMovingDir(delta > 0 ? 1 : -1)
   }
 
   const handlePointerUp = () => {
     dragging.current = false
-    setMovingDir(0)
+    // 약간의 딜레이 후 정면으로 복귀 (부드럽게)
+    setTimeout(() => {
+      if (!dragging.current) setMovingDir(0)
+    }, 100)
   }
 
   // Keyboard: hold arrow keys
