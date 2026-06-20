@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, RotateCcw, Trophy } from 'lucide-react'
+import { ChevronLeft, RotateCcw, Trophy, Timer } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { playCorrect, playWrong } from '@/lib/audio'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useGameTimer } from '@/hooks/useGameTimer'
+import { useRecordsStore } from '@/stores/recordsStore'
 import { shuffle } from '@/lib/random'
 
 const FLAG_CODES = [
@@ -64,6 +65,8 @@ function createCards(pairCount: number, theme: ThemeKey): Card[] {
 export default function MemoryMatch() {
   useGameTimer()
   const { soundEnabled } = useSettingsStore()
+  const { updateBestTime, getBestTime } = useRecordsStore()
+  const [bestTime, setBestTime] = useState(() => getBestTime('game/memory'))
 
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null)
   const [theme, setTheme] = useState<ThemeKey | null>(null)
@@ -110,6 +113,10 @@ export default function MemoryMatch() {
     if (pairCount > 0 && matchedCount === pairCount) {
       setFinished(true)
       clearInterval(timerRef.current)
+      const finalElapsed = Math.floor((Date.now() - startTime) / 1000)
+      if (updateBestTime('game/memory', finalElapsed)) {
+        setBestTime(finalElapsed)
+      }
     }
   }, [matchedCount, pairCount])
 
@@ -303,13 +310,21 @@ export default function MemoryMatch() {
             <ChevronLeft size={20} className="text-gray-500" />
           </Link>
           <h1 className="text-[17px] font-bold text-gray-900">기억력 게임</h1>
-          <button
-            onClick={restart}
-            className="p-2.5 rounded-xl hover:bg-gray-100/80 transition-colors"
-            aria-label="다시하기"
-          >
-            <RotateCcw size={18} className="text-gray-400" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {bestTime !== null && (
+              <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/60 rounded-full px-2.5 py-1.5">
+                <Timer size={13} className="text-blue-500" />
+                <span className="text-xs font-bold text-amber-700">{Math.floor(bestTime / 60)}:{String(bestTime % 60).padStart(2, '0')}</span>
+              </div>
+            )}
+            <button
+              onClick={restart}
+              className="p-2.5 rounded-xl hover:bg-gray-100/80 transition-colors"
+              aria-label="다시하기"
+            >
+              <RotateCcw size={18} className="text-gray-400" />
+            </button>
+          </div>
         </div>
       </header>
 

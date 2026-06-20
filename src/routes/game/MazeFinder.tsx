@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { playCorrect } from '@/lib/audio'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useGameTimer } from '@/hooks/useGameTimer'
+import { useRecordsStore } from '@/stores/recordsStore'
 
 // ── 미로 생성 (반복적 DFS) ─────────────────────────────────
 const N = 1, E = 2, S = 4, W = 8
@@ -55,6 +56,8 @@ type Phase = 'idle' | 'playing' | 'levelup' | 'done'
 export default function MazeFinder() {
   useGameTimer()
   const { soundEnabled } = useSettingsStore()
+  const { updateHighScore, getHighScore } = useRecordsStore()
+  const [bestScore, setBestScore] = useState(() => getHighScore('game/maze'))
 
   const [phase, setPhase]       = useState<Phase>('idle')
   const [level, setLevel]       = useState(0)
@@ -170,6 +173,9 @@ export default function MazeFinder() {
         phaseRef.current = 'done'
         setPhase('done')
         setWon(true)
+        if (updateHighScore('game/maze', scoreRef.current)) {
+          setBestScore(scoreRef.current)
+        }
       }
     }
   }, [soundEnabled, startLevel, startTimer])
@@ -255,7 +261,14 @@ export default function MazeFinder() {
           </div>
           <h1 className="text-[17px] font-bold text-gray-900">미로찾기</h1>
         </div>
-        <div className="w-8" />
+        <div>
+          {bestScore > 0 && (
+            <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/60 rounded-full px-2.5 py-1.5">
+              <Trophy size={13} className="text-amber-500" />
+              <span className="text-xs font-bold text-amber-700">{bestScore}</span>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* 점수 / 타이머 */}

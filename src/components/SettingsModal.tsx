@@ -1,4 +1,4 @@
-import { useSettingsStore, type AdditionDifficulty, type MultiplicationDifficulty, type ClockDifficulty, type AlphabetMode, type JamoFilter } from '@/stores/settingsStore'
+import { useSettingsStore, type AdditionDifficulty, type SubtractionDifficulty, type MultiplicationDifficulty, type ClockDifficulty, type AlphabetMode, type JamoFilter } from '@/stores/settingsStore'
 import { useLocation } from 'react-router-dom'
 import { X, Volume2, Timer, Gauge, Pen, Shapes, Type, BookOpen, Headphones } from 'lucide-react'
 
@@ -66,6 +66,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
 
   const isMath = path.includes('/math')
   const isAddition = path.includes('/addition')
+  const isSubtraction = path.includes('/subtraction')
   const isMultiplication = path.includes('/multiplication')
   const isBlank = path.includes('/blank')
   const isPattern = path.includes('/pattern')
@@ -133,7 +134,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
           )}
 
           {/* 수학: 더하기 */}
-          {(isAddition || (isMath && !isMultiplication && !isBlank && !isPattern && !isClock)) && (
+          {(isAddition || (isMath && !isSubtraction && !isMultiplication && !isBlank && !isPattern && !isClock)) && (
             <div className="border-t border-gray-100 pt-4">
               <SectionLabel icon={Gauge} label="더하기 난이도" />
               <SegmentButton<AdditionDifficulty>
@@ -148,8 +149,24 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
             </div>
           )}
 
+          {/* 수학: 빼기 */}
+          {(isSubtraction || (isMath && !isAddition && !isMultiplication && !isBlank && !isPattern && !isClock)) && (
+            <div className="border-t border-gray-100 pt-4">
+              <SectionLabel icon={Gauge} label="빼기 난이도" />
+              <SegmentButton<SubtractionDifficulty>
+                options={[
+                  { value: 'easy', label: '쉬움 (1~5)' },
+                  { value: 'normal', label: '보통 (0~10)' },
+                  { value: 'hard', label: '어려움 (0~20)' },
+                ]}
+                value={store.subtractionDifficulty}
+                onChange={store.setSubtractionDifficulty}
+              />
+            </div>
+          )}
+
           {/* 수학: 곱하기 */}
-          {(isMultiplication || (isMath && !isAddition && !isBlank && !isPattern && !isClock)) && (
+          {(isMultiplication || (isMath && !isAddition && !isSubtraction && !isBlank && !isPattern && !isClock)) && (
             <div className="border-t border-gray-100 pt-4">
               <SectionLabel icon={Gauge} label="곱하기 난이도" />
               <SegmentButton<MultiplicationDifficulty>
@@ -165,7 +182,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
           )}
 
           {/* 수학: 빈칸채우기 */}
-          {(isBlank || (isMath && !isAddition && !isMultiplication && !isPattern && !isClock)) && (
+          {(isBlank || (isMath && !isAddition && !isSubtraction && !isMultiplication && !isPattern && !isClock)) && (
             <div className="border-t border-gray-100 pt-4">
               <SectionLabel icon={Pen} label="빈칸채우기" />
               <div className="space-y-3">
@@ -190,7 +207,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
           )}
 
           {/* 수학: 패턴채우기 */}
-          {(isPattern || (isMath && !isAddition && !isMultiplication && !isBlank && !isClock)) && (
+          {(isPattern || (isMath && !isAddition && !isSubtraction && !isMultiplication && !isBlank && !isClock)) && (
             <div className="border-t border-gray-100 pt-4">
               <SectionLabel icon={Shapes} label="패턴채우기" />
               <SegmentButton<'easy' | 'hard'>
@@ -214,7 +231,7 @@ export default function SettingsModal({ open, onOpenChange }: SettingsModalProps
           )}
 
           {/* 수학: 시계 읽기 */}
-          {(isClock || (isMath && !isAddition && !isMultiplication && !isBlank && !isPattern)) && (
+          {(isClock || (isMath && !isAddition && !isSubtraction && !isMultiplication && !isBlank && !isPattern)) && (
             <div className="border-t border-gray-100 pt-4">
               <SectionLabel icon={Gauge} label="시계 난이도" />
               <SegmentButton<ClockDifficulty>

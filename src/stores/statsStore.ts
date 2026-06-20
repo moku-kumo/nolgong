@@ -43,13 +43,17 @@ export function getRecentDays(n: number): string[] {
 
 /** 모드별 한글 이름 */
 export const MODE_NAMES: Record<string, string> = {
-  'math/addition': '덧셈/뺄셈',
+  'math/addition': '더하기',
+  'math/subtraction': '빼기',
+  'math/multiplication': '곱하기',
   'math/blank': '빈칸채우기',
   'math/pattern': '패턴채우기',
+  'math/clock': '시계 보기',
   'english/alphabet': '알파벳',
   'english/picture': '그림단어',
   'english/listen': '듣기',
   'english/phonics': '파닉스',
   'korean/jamo': '자음모음',
   'korean/word': '단어읽기',
+  'korean/batchim': '받침읽기',
 }

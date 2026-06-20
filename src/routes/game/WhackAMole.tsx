@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { playCorrect } from '@/lib/audio'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useGameTimer } from '@/hooks/useGameTimer'
+import { useRecordsStore } from '@/stores/recordsStore'
 
 const GRID = 9 // 3x3
 const GAME_TIME = 30 // 30초
@@ -12,7 +13,9 @@ const GAME_TIME = 30 // 30초
 export default function WhackAMole() {
   useGameTimer()
   const { soundEnabled } = useSettingsStore()
+  const { updateHighScore, getHighScore } = useRecordsStore()
   const [score, setScore] = useState(0)
+  const [bestScore, setBestScore] = useState(() => getHighScore('game/whack'))
   const [actives, setActives] = useState<Set<number>>(new Set())
   const [goldens, setGoldens] = useState<Set<number>>(new Set())
   const activesRef = useRef<Set<number>>(new Set())
@@ -121,6 +124,9 @@ export default function WhackAMole() {
           moleTimers.current.clear()
           setActives(new Set())
           setFinished(true)
+          if (updateHighScore('game/whack', scoreRef.current)) {
+            setBestScore(scoreRef.current)
+          }
           return 0
         }
         return t - 1
@@ -174,9 +180,17 @@ export default function WhackAMole() {
           </div>
           <h2 className="text-[17px] font-bold text-gray-900">두더지잡기</h2>
         </div>
-        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200/60">
-          <Star size={14} className="text-orange-500" fill="currentColor" />
-          <span className="text-sm font-bold text-orange-600">{score}</span>
+        <div className="flex items-center gap-1.5">
+          {bestScore > 0 && (
+            <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/60 rounded-full px-2.5 py-1.5">
+              <Trophy size={13} className="text-amber-500" />
+              <span className="text-xs font-bold text-amber-700">{bestScore}</span>
+            </div>
+          )}
+          <div className="bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200/60 flex items-center gap-1.5">
+            <Star size={14} className="text-orange-500" fill="currentColor" />
+            <span className="text-sm font-bold text-orange-600">{score}</span>
+          </div>
         </div>
       </header>
 

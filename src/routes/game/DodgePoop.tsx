@@ -4,6 +4,7 @@ import { ChevronLeft, Bomb, Star, Trophy, AlertTriangle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useGameTimer } from '@/hooks/useGameTimer'
+import { useRecordsStore } from '@/stores/recordsStore'
 import { playCorrect, playWrong } from '@/lib/audio'
 
 const GAME_TIME = 30
@@ -27,7 +28,9 @@ interface Poop {
 export default function DodgePoop() {
   useGameTimer()
   const { soundEnabled } = useSettingsStore()
+  const { updateHighScore, getHighScore } = useRecordsStore()
   const [score, setScore] = useState(0)
+  const [bestScore, setBestScore] = useState(() => getHighScore('game/poop'))
   const [timeLeft, setTimeLeft] = useState(GAME_TIME)
   const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
@@ -173,6 +176,9 @@ export default function DodgePoop() {
       if (soundEnabled) playWrong()
       setHit(true)
       setFinished(true)
+      if (updateHighScore('game/poop', scoreRef.current)) {
+        setBestScore(scoreRef.current)
+      }
       poopsRef.current = []
       setRenderPoops([])
       setScorePopups([])
@@ -223,6 +229,9 @@ export default function DodgePoop() {
           cancelAnimationFrame(frameRef.current!)
           if (soundEnabled) playCorrect()
           setFinished(true)
+          if (updateHighScore('game/poop', scoreRef.current)) {
+            setBestScore(scoreRef.current)
+          }
           return 0
         }
         return t - 1
@@ -314,9 +323,17 @@ export default function DodgePoop() {
           </div>
           <h2 className="text-[17px] font-bold text-gray-900">똥 피하기</h2>
         </div>
-        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200/60">
-          <Star size={14} className="text-orange-500" fill="currentColor" />
-          <span className="text-sm font-bold text-orange-600">{score}</span>
+        <div className="flex items-center gap-1.5">
+          {bestScore > 0 && (
+            <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/60 rounded-full px-2.5 py-1.5">
+              <Trophy size={13} className="text-amber-500" />
+              <span className="text-xs font-bold text-amber-700">{bestScore}</span>
+            </div>
+          )}
+          <div className="bg-orange-50 px-3 py-1.5 rounded-xl border border-orange-200/60 flex items-center gap-1.5">
+            <Star size={14} className="text-orange-500" fill="currentColor" />
+            <span className="text-sm font-bold text-orange-600">{score}</span>
+          </div>
         </div>
       </header>
 

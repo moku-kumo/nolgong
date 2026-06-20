@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useRecordsStore } from '@/stores/recordsStore'
 import { randInt, shuffle } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
 import { X } from 'lucide-react'
@@ -35,6 +36,9 @@ function generateProblem(difficulty: MultiplicationDifficulty) {
 export default function Multiplication() {
   const { multiplicationDifficulty, timerEnabled, timerSeconds, soundEnabled } = useSettingsStore()
   const { score, total, addCorrect, addWrong } = useScore('math/multiplication')
+  const { updateStreak, getStreak } = useRecordsStore()
+  const streakRef = useRef(0)
+  const [bestStreak, setBestStreak] = useState(() => getStreak('math/multiplication'))
   const [problem, setProblem] = useState(() => generateProblem(multiplicationDifficulty))
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
@@ -50,10 +54,15 @@ export default function Multiplication() {
     if (opt === problem.answer) {
       if (soundEnabled) playCorrect()
       addCorrect()
+      streakRef.current += 1
+      if (updateStreak('math/multiplication', streakRef.current)) {
+        setBestStreak(streakRef.current)
+      }
       setFeedback('correct')
     } else {
       if (soundEnabled) playWrong()
       addWrong()
+      streakRef.current = 0
       setFeedback('wrong')
     }
   }
@@ -62,6 +71,7 @@ export default function Multiplication() {
     if (!feedback) {
       if (soundEnabled) playWrong()
       addWrong()
+      streakRef.current = 0
       setFeedback('wrong')
     }
   }
@@ -75,6 +85,7 @@ export default function Multiplication() {
       backLabel="수학"
       score={score}
       total={total}
+      bestRecord={{ type: 'streak', value: bestStreak }}
       timerEnabled={timerEnabled}
       timerSeconds={timerSeconds}
       timerKey={timerKey}

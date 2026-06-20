@@ -9,6 +9,13 @@ export const additionRanges = {
   hard: { min: 0, max: 20 },
 } as const
 
+export type SubtractionDifficulty = 'easy' | 'normal' | 'hard'
+export const subtractionRanges = {
+  easy: { min: 1, max: 5 },
+  normal: { min: 0, max: 10 },
+  hard: { min: 0, max: 20 },
+} as const
+
 export type MultiplicationDifficulty = 'easy' | 'normal' | 'hard'
 export type ClockDifficulty = 'easy' | 'normal' | 'hard'
 
@@ -49,6 +56,7 @@ interface SettingsState {
 
   // 수학
   additionDifficulty: AdditionDifficulty
+  subtractionDifficulty: SubtractionDifficulty
   multiplicationDifficulty: MultiplicationDifficulty
   clockDifficulty: ClockDifficulty
   patternSettings: PatternSettings
@@ -67,6 +75,7 @@ interface SettingsState {
   setRequiredStudyMinutes: (v: number) => void
   setParentPin: (v: string) => void
   setAdditionDifficulty: (v: AdditionDifficulty) => void
+  setSubtractionDifficulty: (v: SubtractionDifficulty) => void
   setMultiplicationDifficulty: (v: MultiplicationDifficulty) => void
   setClockDifficulty: (v: ClockDifficulty) => void
   setPatternSettings: (v: Partial<PatternSettings>) => void
@@ -88,6 +97,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   parentPin: load('parentPin', '0000'),
 
   additionDifficulty: load<AdditionDifficulty>('additionDifficulty', 'easy'),
+  subtractionDifficulty: load<SubtractionDifficulty>('subtractionDifficulty', 'easy'),
   multiplicationDifficulty: load<MultiplicationDifficulty>('multiplicationDifficulty', 'easy'),
   clockDifficulty: load<ClockDifficulty>('clockDifficulty', 'normal'),
   patternSettings: load<PatternSettings>('patternSettings', defaultPatternSettings),
@@ -102,6 +112,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setParentPin: (v) => { save('parentPin', v); set({ parentPin: v }) },
 
   setAdditionDifficulty: (v) => { save('additionDifficulty', v); set({ additionDifficulty: v }) },
+  setSubtractionDifficulty: (v) => { save('subtractionDifficulty', v); set({ subtractionDifficulty: v }) },
   setMultiplicationDifficulty: (v) => { save('multiplicationDifficulty', v); set({ multiplicationDifficulty: v }) },
   setClockDifficulty: (v) => { save('clockDifficulty', v); set({ clockDifficulty: v }) },
   setPatternSettings: (v) => {

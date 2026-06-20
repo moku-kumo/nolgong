@@ -1,12 +1,17 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, Settings } from 'lucide-react'
+import { ChevronLeft, Settings, Flame, Trophy, Timer } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import TimerBar from './TimerBar'
 import ScoreBoard from './ScoreBoard'
 import SettingsModal from '@/components/SettingsModal'
 import { useStudyTimer } from '@/hooks/useStudyTimer'
 import type { ReactNode } from 'react'
+
+type BestRecord =
+  | { type: 'streak'; value: number }
+  | { type: 'highScore'; value: number }
+  | { type: 'bestTime'; value: number | null }
 
 interface GameLayoutProps {
   title: string
@@ -16,6 +21,7 @@ interface GameLayoutProps {
   backLabel?: string
   score: number
   total: number
+  bestRecord?: BestRecord
   timerEnabled?: boolean
   timerSeconds?: number
   timerKey?: number
@@ -31,6 +37,7 @@ export default function GameLayout({
   backLabel: _backLabel = '뒤로',
   score,
   total,
+  bestRecord,
   timerEnabled = true,
   timerSeconds = 10,
   timerKey,
@@ -55,6 +62,18 @@ export default function GameLayout({
             <h2 className="text-[17px] font-bold text-gray-900">{title}</h2>
           </div>
           <div className="flex items-center gap-1.5">
+            {bestRecord && bestRecord.value !== null && bestRecord.value > 0 && (
+              <div className="flex items-center gap-1 bg-amber-50 border border-amber-200/60 rounded-full px-2.5 py-1.5">
+                {bestRecord.type === 'streak' && <Flame size={13} className="text-orange-500" />}
+                {bestRecord.type === 'highScore' && <Trophy size={13} className="text-amber-500" />}
+                {bestRecord.type === 'bestTime' && <Timer size={13} className="text-blue-500" />}
+                <span className="text-xs font-bold text-amber-700">
+                  {bestRecord.type === 'bestTime'
+                    ? `${Math.floor(bestRecord.value! / 60)}:${String(bestRecord.value! % 60).padStart(2, '0')}`
+                    : bestRecord.value}
+                </span>
+              </div>
+            )}
             <ScoreBoard score={score} total={total} />
             <button
               onClick={() => setSettingsOpen(true)}

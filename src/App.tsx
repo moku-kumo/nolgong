@@ -11,6 +11,7 @@ import BlankFill from '@/routes/math/BlankFill'
 import Pattern from '@/routes/math/Pattern'
 import ClockReading from '@/routes/math/ClockReading'
 import Multiplication from '@/routes/math/Multiplication'
+import Subtraction from '@/routes/math/Subtraction'
 import EnglishHome from '@/routes/english/EnglishHome'
 import Alphabet from '@/routes/english/Alphabet'
 import PictureWord from '@/routes/english/PictureWord'
@@ -49,6 +50,7 @@ function App() {
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/math" element={<ProtectedRoute><MathHome /></ProtectedRoute>} />
         <Route path="/math/addition" element={<ProtectedRoute><Addition /></ProtectedRoute>} />
+        <Route path="/math/subtraction" element={<ProtectedRoute><Subtraction /></ProtectedRoute>} />
         <Route path="/math/blank" element={<ProtectedRoute><BlankFill /></ProtectedRoute>} />
         <Route path="/math/pattern" element={<ProtectedRoute><Pattern /></ProtectedRoute>} />
         <Route path="/math/clock" element={<ProtectedRoute><ClockReading /></ProtectedRoute>} />

@@ -47,7 +47,7 @@ function AnalogClock({ hour, minute }: { hour: number; minute: number }) {
   // 시침: 시 + 분/60 → 360도 / 12
   const hourAngle = ((hour % 12) + minute / 60) * 30 - 90
   const hourRad = (hourAngle * Math.PI) / 180
-  const hourLen = 45
+  const hourLen = 38
   const hx = cx + hourLen * Math.cos(hourRad)
   const hy = cy + hourLen * Math.sin(hourRad)
 
@@ -59,7 +59,7 @@ function AnalogClock({ hour, minute }: { hour: number; minute: number }) {
   const my = cy + minLen * Math.sin(minRad)
 
   return (
-    <svg viewBox="0 0 200 200" className="w-48 h-48 drop-shadow-lg">
+    <svg viewBox="0 0 200 200" className="w-72 h-72 drop-shadow-lg">
       {/* 시계 배경 */}
       <circle cx={cx} cy={cy} r={r + 8} fill="white" stroke="#e5e7eb" strokeWidth={3} />
       <circle cx={cx} cy={cy} r={r} fill="white" stroke="#c7d2fe" strokeWidth={2} />
@@ -68,8 +68,8 @@ function AnalogClock({ hour, minute }: { hour: number; minute: number }) {
       {Array.from({ length: 12 }, (_, i) => {
         const num = i + 1
         const angle = (num * 30 - 90) * (Math.PI / 180)
-        const nx = cx + (r - 16) * Math.cos(angle)
-        const ny = cy + (r - 16) * Math.sin(angle)
+        const nx = cx + (r - 24) * Math.cos(angle)
+        const ny = cy + (r - 24) * Math.sin(angle)
         return (
           <text
             key={num}
@@ -77,7 +77,7 @@ function AnalogClock({ hour, minute }: { hour: number; minute: number }) {
             y={ny}
             textAnchor="middle"
             dominantBaseline="central"
-            className="text-[14px] font-bold fill-gray-600"
+            className="text-[17px] font-extrabold fill-gray-700"
           >
             {num}
           </text>
@@ -104,14 +104,30 @@ function AnalogClock({ hour, minute }: { hour: number; minute: number }) {
         )
       })}
 
-      {/* 시침 */}
-      <line x1={cx} y1={cy} x2={hx} y2={hy} stroke="#4338ca" strokeWidth={5} strokeLinecap="round" />
+      {/* 시침 - 옅은 파랑 */}
+      <line x1={cx} y1={cy} x2={hx} y2={hy} stroke="#60a5fa" strokeWidth={7} strokeLinecap="round" />
+      <circle cx={hx} cy={hy} r={5} fill="#60a5fa" />
 
-      {/* 분침 */}
-      <line x1={cx} y1={cy} x2={mx} y2={my} stroke="#6366f1" strokeWidth={3} strokeLinecap="round" />
+      {/* 분침 - 옅은 빨강 */}
+      <line x1={cx} y1={cy} x2={mx} y2={my} stroke="#f87171" strokeWidth={3.5} strokeLinecap="round" />
+      <polygon
+        points={(() => {
+          const tipLen = 8
+          const tipWidth = 4
+          const perpRad = minRad + Math.PI / 2
+          const tx = mx + tipLen * Math.cos(minRad)
+          const ty = my + tipLen * Math.sin(minRad)
+          const lx = mx - tipWidth * Math.cos(perpRad)
+          const ly = my - tipWidth * Math.sin(perpRad)
+          const rx = mx + tipWidth * Math.cos(perpRad)
+          const ry = my + tipWidth * Math.sin(perpRad)
+          return `${tx},${ty} ${lx},${ly} ${rx},${ry}`
+        })()}
+        fill="#f87171"
+      />
 
       {/* 중심점 */}
-      <circle cx={cx} cy={cy} r={5} fill="#4338ca" />
+      <circle cx={cx} cy={cy} r={5} fill="#374151" />
       <circle cx={cx} cy={cy} r={2.5} fill="white" />
     </svg>
   )
@@ -153,7 +169,7 @@ export default function ClockReading() {
 
   return (
     <GameLayout
-      title="시계 읽기"
+      title="시계 보기"
       icon={Clock}
       iconGradient="from-amber-500 to-orange-600"
       backTo="/math"

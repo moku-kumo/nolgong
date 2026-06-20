@@ -3,40 +3,42 @@ import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
 import { useScore } from '@/hooks/useScore'
-import { useSettingsStore, additionRanges, type AdditionDifficulty } from '@/stores/settingsStore'
+import { useSettingsStore, subtractionRanges, type SubtractionDifficulty } from '@/stores/settingsStore'
 import { useRecordsStore } from '@/stores/recordsStore'
 import { randInt, shuffle } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
-import { Plus } from 'lucide-react'
+import { Minus } from 'lucide-react'
 
-function generateProblem(difficulty: AdditionDifficulty) {
-  const range = additionRanges[difficulty]
-  const a = randInt(range.min, range.max)
-  const b = randInt(range.min, range.max)
-  const answer = a + b
+function generateProblem(difficulty: SubtractionDifficulty) {
+  const range = subtractionRanges[difficulty]
+  let a = randInt(range.min, range.max)
+  let b = randInt(range.min, range.max)
+  // 큰 수에서 작은 수를 빼서 음수 방지
+  if (a < b) [a, b] = [b, a]
+  const answer = a - b
   const options = new Set<number>([answer])
   while (options.size < 6) {
-    const wrong = randInt(0, range.max * 3)
+    const wrong = randInt(0, range.max * 2)
     if (wrong !== answer) options.add(wrong)
   }
   return { a, b, answer, options: shuffle([...options]) }
 }
 
-export default function Addition() {
-  const { additionDifficulty, timerEnabled, timerSeconds, soundEnabled } = useSettingsStore()
-  const { score, total, addCorrect, addWrong } = useScore('math/addition')
+export default function Subtraction() {
+  const { subtractionDifficulty, timerEnabled, timerSeconds, soundEnabled } = useSettingsStore()
+  const { score, total, addCorrect, addWrong } = useScore('math/subtraction')
   const { updateStreak, getStreak } = useRecordsStore()
   const streakRef = useRef(0)
-  const [bestStreak, setBestStreak] = useState(() => getStreak('math/addition'))
-  const [problem, setProblem] = useState(() => generateProblem(additionDifficulty))
+  const [bestStreak, setBestStreak] = useState(() => getStreak('math/subtraction'))
+  const [problem, setProblem] = useState(() => generateProblem(subtractionDifficulty))
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
 
   const next = useCallback(() => {
-    setProblem(generateProblem(additionDifficulty))
+    setProblem(generateProblem(subtractionDifficulty))
     setFeedback(null)
     setTimerKey((k) => k + 1)
-  }, [additionDifficulty])
+  }, [subtractionDifficulty])
 
   const handleSelect = (opt: number) => {
     if (feedback) return
@@ -44,7 +46,7 @@ export default function Addition() {
       if (soundEnabled) playCorrect()
       addCorrect()
       streakRef.current += 1
-      if (updateStreak('math/addition', streakRef.current)) {
+      if (updateStreak('math/subtraction', streakRef.current)) {
         setBestStreak(streakRef.current)
       }
       setFeedback('correct')
@@ -67,21 +69,20 @@ export default function Addition() {
 
   return (
     <GameLayout
-      title="더하기"
-      icon={Plus}
-      iconGradient="from-blue-500 to-indigo-600"
+      title="빼기"
+      icon={Minus}
+      iconGradient="from-rose-500 to-pink-600"
       backTo="/math"
       backLabel="수학"
       score={score}
       total={total}
-      bestRecord={{ type: 'streak', value: bestStreak }}
       timerEnabled={timerEnabled}
       timerSeconds={timerSeconds}
       timerKey={timerKey}
       onTimeUp={handleTimeUp}
     >
       <div className="text-6xl font-bold text-gray-700 mb-4">
-        {problem.a} + {problem.b} = ?
+        {problem.a} − {problem.b} = ?
       </div>
 
       {feedback ? (
