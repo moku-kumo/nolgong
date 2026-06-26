@@ -76,6 +76,7 @@ export default function Subtraction() {
       backLabel="수학"
       score={score}
       total={total}
+      bestRecord={{ type: 'streak', value: bestStreak }}
       timerEnabled={timerEnabled}
       timerSeconds={timerSeconds}
       timerKey={timerKey}
