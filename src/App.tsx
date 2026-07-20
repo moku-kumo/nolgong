@@ -2,6 +2,7 @@
 import { useEffect } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { syncAll } from '@/lib/sync'
+import { unlockAudio } from '@/lib/audio'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Login from '@/routes/Login'
 import Home from '@/routes/Home'
@@ -26,6 +27,7 @@ import SpotDiff from '@/routes/game/SpotDiff'
 import MazeFinder from '@/routes/game/MazeFinder'
 import Sewing from '@/routes/game/Sewing'
 import MemoryMatch from '@/routes/game/MemoryMatch'
+import Snake from '@/routes/game/Snake'
 import ParentDashboard from '@/routes/ParentDashboard'
 import Phonics from '@/routes/english/Phonics'
 
@@ -37,6 +39,21 @@ function App() {
     const unsubscribe = initialize()
     return unsubscribe
   }, [initialize])
+
+  // 첫 유저 제스처에서 AudioContext unlock (Galaxy 태블릿 등)
+  useEffect(() => {
+    const handler = () => {
+      unlockAudio()
+      window.removeEventListener('pointerdown', handler)
+      window.removeEventListener('touchstart', handler)
+    }
+    window.addEventListener('pointerdown', handler, { once: true })
+    window.addEventListener('touchstart', handler, { once: true })
+    return () => {
+      window.removeEventListener('pointerdown', handler)
+      window.removeEventListener('touchstart', handler)
+    }
+  }, [])
 
   // 로그인 후 서버 동기화
   useEffect(() => {
@@ -69,6 +86,7 @@ function App() {
         <Route path="/game/maze" element={<ProtectedRoute><MazeFinder /></ProtectedRoute>} />
         <Route path="/game/sewing" element={<ProtectedRoute><Sewing /></ProtectedRoute>} />
         <Route path="/game/memory" element={<ProtectedRoute><MemoryMatch /></ProtectedRoute>} />
+        <Route path="/game/snake" element={<ProtectedRoute><Snake /></ProtectedRoute>} />
         <Route path="/parent" element={<ProtectedRoute><ParentDashboard /></ProtectedRoute>} />
         <Route path="/english/phonics" element={<ProtectedRoute><Phonics /></ProtectedRoute>} />
       </Routes>

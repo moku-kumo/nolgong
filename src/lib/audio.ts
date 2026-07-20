@@ -6,6 +6,23 @@ function getCtx(): AudioContext {
   return audioCtx
 }
 
+// iPad/iOS에서 AudioContext를 유저 제스처로 unlock
+let unlocked = false
+export function unlockAudio() {
+  if (unlocked) return
+  const ctx = getCtx()
+  if (ctx.state === 'suspended') {
+    ctx.resume()
+  }
+  // 무음 버퍼를 재생해서 완전히 unlock
+  const buffer = ctx.createBuffer(1, 1, 22050)
+  const source = ctx.createBufferSource()
+  source.buffer = buffer
+  source.connect(ctx.destination)
+  source.start(0)
+  unlocked = true
+}
+
 function playTone(freq: number, duration: number, type: OscillatorType = 'sine') {
   const ctx = getCtx()
   const osc = ctx.createOscillator()
