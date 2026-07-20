@@ -22,6 +22,12 @@
         }
       }(window.location))
     </script>
+    <!-- 카카오 인앱 브라우저 감지 → 외부 브라우저로 열기 -->
+    <script>
+      if (/KAKAOTALK/i.test(navigator.userAgent)) {
+        location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(location.href);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

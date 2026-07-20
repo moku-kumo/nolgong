@@ -12,8 +12,8 @@ type Cell = { x: number; y: number }
 
 const GRID_SIZE = 15
 const CELL_SIZE_PERCENT = 100 / GRID_SIZE
-const INITIAL_SPEED = 180 // ms per tick
-const SPEED_INCREMENT = 4 // ms faster per food eaten
+const INITIAL_SPEED = 350 // ms per tick (아이용 느린 시작)
+const SPEED_INCREMENT = 3 // ms faster per food eaten
 
 const INITIAL_SNAKE: Cell[] = [
   { x: 9, y: 7 },
@@ -338,32 +338,32 @@ export default function Snake() {
 
         {/* D-Pad Controls */}
         {started && !finished && (
-          <div className="mt-6 grid grid-cols-3 gap-2 w-[180px]">
+          <div className="mt-5 grid grid-cols-3 gap-3 w-[260px]">
             <div />
             <button
               onPointerDown={() => enqueueDir('UP')}
-              className="w-14 h-14 bg-white rounded-xl shadow border border-gray-200 flex items-center justify-center text-2xl active:bg-gray-100 active:scale-95 transition-all select-none"
+              className="w-20 h-20 bg-white rounded-2xl shadow-md border border-gray-200 flex items-center justify-center text-3xl active:bg-gray-100 active:scale-95 transition-all select-none"
             >
               ⬆️
             </button>
             <div />
             <button
               onPointerDown={() => enqueueDir('LEFT')}
-              className="w-14 h-14 bg-white rounded-xl shadow border border-gray-200 flex items-center justify-center text-2xl active:bg-gray-100 active:scale-95 transition-all select-none"
+              className="w-20 h-20 bg-white rounded-2xl shadow-md border border-gray-200 flex items-center justify-center text-3xl active:bg-gray-100 active:scale-95 transition-all select-none"
             >
               ⬅️
             </button>
-            <div className="w-14 h-14" />
+            <div className="w-20 h-20" />
             <button
               onPointerDown={() => enqueueDir('RIGHT')}
-              className="w-14 h-14 bg-white rounded-xl shadow border border-gray-200 flex items-center justify-center text-2xl active:bg-gray-100 active:scale-95 transition-all select-none"
+              className="w-20 h-20 bg-white rounded-2xl shadow-md border border-gray-200 flex items-center justify-center text-3xl active:bg-gray-100 active:scale-95 transition-all select-none"
             >
               ➡️
             </button>
             <div />
             <button
               onPointerDown={() => enqueueDir('DOWN')}
-              className="w-14 h-14 bg-white rounded-xl shadow border border-gray-200 flex items-center justify-center text-2xl active:bg-gray-100 active:scale-95 transition-all select-none"
+              className="w-20 h-20 bg-white rounded-2xl shadow-md border border-gray-200 flex items-center justify-center text-3xl active:bg-gray-100 active:scale-95 transition-all select-none"
             >
               ⬇️
             </button>
