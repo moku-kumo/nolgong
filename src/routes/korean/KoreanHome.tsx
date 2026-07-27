@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SubjectCard from '@/components/SubjectCard'
 import SettingsModal from '@/components/SettingsModal'
-import { ChevronLeft, Settings, BookOpen, PenTool } from 'lucide-react'
+import { ChevronLeft, Settings, BookOpen, PenTool, BookText } from 'lucide-react'
 
 function GieukIcon({ size = 22, className = '' }: { size?: number; className?: string }) {
   return (
@@ -16,6 +16,7 @@ const modes = [
   { to: '/korean/jamo', icon: GieukIcon, label: '자음/모음', desc: 'ㄱㄴㄷ ㅁㅂㅅ 배우기', gradient: 'bg-gradient-to-br from-violet-500 to-purple-600', iconColor: 'text-white' },
   { to: '/korean/word', icon: BookOpen, label: '단어읽기', desc: '한글 단어를 속도감 있게', gradient: 'bg-gradient-to-br from-purple-500 to-fuchsia-600', iconColor: 'text-white' },
   { to: '/korean/writing', icon: PenTool, label: '글씨 쓰기', desc: '따라쓰기 · 자유쓰기', gradient: 'bg-gradient-to-br from-fuchsia-500 to-pink-600', iconColor: 'text-white' },
+  { to: '/korean/story', icon: BookText, label: '동화 읽기', desc: '재미있는 이야기를 읽어요', gradient: 'bg-gradient-to-br from-amber-500 to-orange-600', iconColor: 'text-white' },
 ]
 
 export default function KoreanHome() {

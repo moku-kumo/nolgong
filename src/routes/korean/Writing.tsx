@@ -65,6 +65,11 @@ export default function Writing() {
   const [tab, setTab] = useState<'jamo' | 'word'>('jamo')
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
   const [shuffledWords, setShuffledWords] = useState(() => shuffle([...wordList]))
+  const [score, setScore] = useState<number | null>(null)
+  const [scoreMessage, setScoreMessage] = useState('')
+  const [passed, setPassed] = useState(false)
+  const autoNextTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const checkTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const currentList = tab === 'jamo' ? jamoFullList : shuffledWords
   const currentChar = currentList[currentIndex]
@@ -122,6 +127,8 @@ export default function Writing() {
 
   const startDraw = (e: React.PointerEvent<HTMLCanvasElement>) => {
     e.preventDefault()
+    // 새 입력 시작하면 채점 타이머 취소
+    if (checkTimer.current) { clearTimeout(checkTimer.current); checkTimer.current = null }
     setIsDrawing(true)
     const pos = getPos(e)
     lastPoint.current = pos
@@ -156,9 +163,96 @@ export default function Writing() {
   const endDraw = () => {
     setIsDrawing(false)
     lastPoint.current = null
+    // 3초간 입력 없으면 자동 채점
+    if (checkTimer.current) clearTimeout(checkTimer.current)
+    checkTimer.current = setTimeout(() => {
+      checkDrawingRef.current()
+    }, 1000)
   }
 
-  const nextChar = () => {
+  // 채점: 사용자가 그린 것과 목표 글자를 픽셀 비교
+  const checkDrawing = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')!
+
+    // 사용자가 그린 픽셀 추출
+    const userImageData = ctx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+    const userPixels = userImageData.data
+
+    // 오프스크린 캔버스에 목표 글자 렌더
+    const offscreen = document.createElement('canvas')
+    offscreen.width = CANVAS_SIZE
+    offscreen.height = CANVAS_SIZE
+    const offCtx = offscreen.getContext('2d')!
+    offCtx.font = `bold ${currentChar.length > 1 ? 130 : 220}px sans-serif`
+    offCtx.textAlign = 'center'
+    offCtx.textBaseline = 'middle'
+    offCtx.fillStyle = '#000000'
+    offCtx.fillText(currentChar, CANVAS_SIZE / 2, CANVAS_SIZE / 2)
+    const targetImageData = offCtx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+    const targetPixels = targetImageData.data
+
+    // 픽셀 비교 (알파 채널 기준)
+    let targetCount = 0  // 목표 글자의 픽셀 수
+    let overlapCount = 0 // 사용자가 목표 영역에 쓴 픽셀 수
+    let userCount = 0    // 사용자가 쓴 전체 픽셀 수
+    const threshold = 50
+
+    for (let i = 3; i < targetPixels.length; i += 4) {
+      const isTarget = targetPixels[i] > threshold
+      // 사용자 픽셀: 가이드(연보라) 제외하고 실제 그린 색(보라)만 체크
+      const r = userPixels[i - 3]
+      const g = userPixels[i - 2]
+      const b = userPixels[i - 1]
+      const a = userPixels[i]
+      // DRAW_COLOR는 #7c3aed → r≈124, g≈58, b≈237
+      const isUser = a > threshold && b > 150 && r > 50 && g < 150
+
+      if (isTarget) targetCount++
+      if (isUser) userCount++
+      if (isTarget && isUser) overlapCount++
+    }
+
+    if (userCount === 0) {
+      setScore(0)
+      setScoreMessage('먼저 글자를 써보세요! ✏️')
+      return
+    }
+
+    // 정확도: 목표 영역 커버율과 삐져나간 정도를 합산
+    const coverage = targetCount > 0 ? overlapCount / targetCount : 0
+    const precision = userCount > 0 ? overlapCount / userCount : 0
+    const finalScore = Math.round((coverage * 0.6 + precision * 0.4) * 100)
+
+    setScore(finalScore)
+    if (finalScore >= 10) {
+      setPassed(true)
+      setScoreMessage('잘했어요! 👏')
+      if (soundEnabled) speak('잘했어요!', 'ko-KR')
+      // 1.2초 후 자동으로 다음 글자
+      autoNextTimer.current = setTimeout(() => {
+        nextCharRef.current()
+      }, 1200)
+    } else if (finalScore >= 10) {
+      setScoreMessage('좋아요, 조금만 더! 💪')
+    } else {
+      setScoreMessage('다시 한번 써볼까요? 🤔')
+    }
+  }, [currentChar, soundEnabled, speak])
+
+  const checkDrawingRef = useRef(checkDrawing)
+  useEffect(() => { checkDrawingRef.current = checkDrawing }, [checkDrawing])
+
+  const nextChar = useCallback(() => {
+    if (autoNextTimer.current) {
+      clearTimeout(autoNextTimer.current)
+      autoNextTimer.current = null
+    }
+    if (checkTimer.current) {
+      clearTimeout(checkTimer.current)
+      checkTimer.current = null
+    }
     let next = (currentIndex + 1) % currentList.length
     // 단어 탭에서 한 바퀴 돌면 다시 셔플
     if (tab === 'word' && next === 0) {
@@ -166,17 +260,35 @@ export default function Writing() {
     }
     setCurrentIndex(next)
     clearCanvas()
+    setScore(null)
+    setScoreMessage('')
+    setPassed(false)
     if (soundEnabled) {
       const char = currentList[next]
       const jamo = jamoList.find((j) => j.char === char)
       speak(jamo ? jamo.name : char, 'ko-KR')
     }
-  }
+  }, [currentIndex, currentList, tab, clearCanvas, soundEnabled, speak])
+
+  // ref로 최신 nextChar를 참조 (타이머 콜백용)
+  const nextCharRef = useRef(nextChar)
+  useEffect(() => { nextCharRef.current = nextChar }, [nextChar])
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
+      if (checkTimer.current) clearTimeout(checkTimer.current)
+    }
+  }, [])
 
   const prevChar = () => {
     const prev = (currentIndex - 1 + currentList.length) % currentList.length
     setCurrentIndex(prev)
     clearCanvas()
+    setScore(null)
+    setScoreMessage('')
+    setPassed(false)
   }
 
   const handleTabChange = (newTab: 'jamo' | 'word') => {
@@ -184,6 +296,9 @@ export default function Writing() {
     setCurrentIndex(0)
     if (newTab === 'word') setShuffledWords(shuffle([...wordList]))
     clearCanvas()
+    setScore(null)
+    setScoreMessage('')
+    setPassed(false)
   }
 
   const speakChar = () => {
@@ -279,7 +394,9 @@ export default function Writing() {
 
         {/* 캔버스 */}
         <div className="flex justify-center mb-4">
-          <div className="relative rounded-2xl border-2 border-dashed border-violet-200 bg-white shadow-inner overflow-hidden">
+          <div className={`relative rounded-2xl border-2 border-dashed bg-white shadow-inner overflow-hidden transition-colors duration-300 ${
+            passed ? 'border-green-400 ring-4 ring-green-100' : 'border-violet-200'
+          }`}>
             {/* 격자 배경 */}
             <div
               className="absolute inset-0 pointer-events-none"
@@ -320,12 +437,13 @@ export default function Writing() {
             <ChevronLeft size={20} className="text-gray-600" />
           </button>
           <button
-            onClick={() => { clearCanvas(); drawGuide() }}
+            onClick={() => { clearCanvas(); drawGuide(); setScore(null); setScoreMessage(''); setPassed(false); if (checkTimer.current) { clearTimeout(checkTimer.current); checkTimer.current = null } }}
             className="p-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
             aria-label="지우기"
           >
             <RotateCcw size={20} className="text-gray-600" />
           </button>
+
           {mode === 'trace' && (
             <button
               onClick={() => { setShowGuide(!showGuide); setTimeout(drawGuide, 0) }}
@@ -343,6 +461,24 @@ export default function Writing() {
             <ChevronNext size={20} />
           </button>
         </div>
+
+        {/* 채점 결과 */}
+        {score !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`text-center mb-4 p-3 rounded-xl ${
+              passed ? 'bg-green-50 border border-green-200' :
+              score >= 30 ? 'bg-yellow-50 border border-yellow-200' :
+              'bg-red-50 border border-red-200'
+            }`}
+          >
+            <div className={`text-2xl font-bold mb-1 ${passed ? 'text-green-600' : ''}`}>
+              {score}점
+            </div>
+            <div className="text-sm">{scoreMessage}</div>
+          </motion.div>
+        )}
 
         {/* 진행 표시 */}
         <div className="text-center">

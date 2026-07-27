@@ -21,6 +21,8 @@ import KoreanHome from '@/routes/korean/KoreanHome'
 import Jamo from '@/routes/korean/Jamo'
 import ReadWord from '@/routes/korean/ReadWord'
 import Writing from '@/routes/korean/Writing'
+import StoryHome from '@/routes/korean/StoryHome'
+import StoryRead from '@/routes/korean/StoryRead'
 import GameHome from '@/routes/game/GameHome'
 import WhackAMole from '@/routes/game/WhackAMole'
 import DodgePoop from '@/routes/game/DodgePoop'
@@ -81,6 +83,8 @@ function App() {
         <Route path="/korean/jamo" element={<ProtectedRoute><Jamo /></ProtectedRoute>} />
         <Route path="/korean/word" element={<ProtectedRoute><ReadWord /></ProtectedRoute>} />
         <Route path="/korean/writing" element={<ProtectedRoute><Writing /></ProtectedRoute>} />
+        <Route path="/korean/story" element={<ProtectedRoute><StoryHome /></ProtectedRoute>} />
+        <Route path="/korean/story/:id" element={<ProtectedRoute><StoryRead /></ProtectedRoute>} />
         <Route path="/game" element={<ProtectedRoute><GameHome /></ProtectedRoute>} />
         <Route path="/game/whack" element={<ProtectedRoute><WhackAMole /></ProtectedRoute>} />
         <Route path="/game/dodge" element={<ProtectedRoute><DodgePoop /></ProtectedRoute>} />
