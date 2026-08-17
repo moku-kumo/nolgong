@@ -9,12 +9,25 @@ import { useSpeech } from '@/hooks/useSpeech'
 type Mode = 'basic' | 'hundreds'
 
 const CANVAS_SIZE = 340
-const DIGIT_SIZE = 140
+const DIGIT_SIZE = 280
 const DRAW_COLOR = '#7c3aed'
 const GUIDE_COLOR = '#93c5fd'
 const STROKE_GUIDE_COLOR = '#ec4899'
 const basicNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 const hundredNumbers = Array.from({ length: 100 }, (_, i) => String(i + 1))
+
+function countDrawnPixels(canvas: HTMLCanvasElement) {
+  const pixels = canvas.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height).data
+  if (!pixels) return 0
+  let count = 0
+  for (let index = 0; index < pixels.length; index += 4) {
+    const red = pixels[index]
+    const green = pixels[index + 1]
+    const blue = pixels[index + 2]
+    if (pixels[index + 3] > 50 && blue > 150 && red > 50 && green < 150) count++
+  }
+  return count
+}
 
 // 자릿수별 독립 캔버스
 function DigitCanvas({ char }: { char: string }) {
@@ -27,13 +40,13 @@ function DigitCanvas({ char }: { char: string }) {
     if (!ctx) return
     ctx.clearRect(0, 0, DIGIT_SIZE, DIGIT_SIZE)
     ctx.save()
-    ctx.font = `bold 100px "Trebuchet MS", sans-serif`
+    ctx.font = `bold 200px "Trebuchet MS", sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.strokeStyle = GUIDE_COLOR
-    ctx.lineWidth = 2.5
+    ctx.lineWidth = 4
     ctx.globalAlpha = 0.55
-    ctx.setLineDash([5, 4])
+    ctx.setLineDash([8, 6])
     ctx.strokeText(char, DIGIT_SIZE / 2, DIGIT_SIZE / 2)
     ctx.fillStyle = GUIDE_COLOR
     ctx.globalAlpha = 0.1
@@ -58,7 +71,7 @@ function DigitCanvas({ char }: { char: string }) {
     const pos = getPos(e)
     lastPoint.current = pos
     const ctx = canvasRef.current?.getContext('2d')
-    if (ctx) { ctx.beginPath(); ctx.arc(pos.x, pos.y, 4, 0, Math.PI * 2); ctx.fillStyle = DRAW_COLOR; ctx.fill() }
+    if (ctx) { ctx.beginPath(); ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2); ctx.fillStyle = DRAW_COLOR; ctx.fill() }
   }
 
   const onMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -68,7 +81,7 @@ function DigitCanvas({ char }: { char: string }) {
     const ctx = canvasRef.current?.getContext('2d')
     if (ctx) {
       ctx.beginPath(); ctx.moveTo(lastPoint.current.x, lastPoint.current.y); ctx.lineTo(pos.x, pos.y)
-      ctx.strokeStyle = DRAW_COLOR; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash([]); ctx.stroke()
+      ctx.strokeStyle = DRAW_COLOR; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash([]); ctx.stroke()
     }
     lastPoint.current = pos
   }
@@ -93,35 +106,55 @@ export default function NumberWriting() {
   const { soundEnabled } = useSettingsStore()
   const { speak } = useSpeech()
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const hundredsContainerRef = useRef<HTMLDivElement>(null)
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
+  const checkTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoNextTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isAdvancingRef = useRef(false)
+  const targetVersionRef = useRef(0)
   const [mode, setMode] = useState<Mode>('basic')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isDrawing, setIsDrawing] = useState(false)
+  const [score, setScore] = useState<number | null>(null)
 
   const list = mode === 'basic' ? basicNumbers : hundredNumbers
   const target = list[currentIndex]
+
+  // 처음 로드 시 및 숫자 변경 시 TTS 재생
+  useEffect(() => {
+    targetVersionRef.current += 1
+    isAdvancingRef.current = false
+    if (soundEnabled) speak(target, 'ko-KR')
+  }, [target, soundEnabled, speak])
+
+  useEffect(() => () => {
+    if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
+  }, [])
 
   const drawGuide = useCallback(() => {
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
 
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
-    ctx.save()
-    ctx.font = `bold 230px "Trebuchet MS", sans-serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.strokeStyle = GUIDE_COLOR
-    ctx.lineWidth = 4
-    ctx.globalAlpha = 0.55
-    ctx.setLineDash([8, 7])
-    ctx.strokeText(target, CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 8)
-    ctx.fillStyle = GUIDE_COLOR
-    ctx.globalAlpha = 0.1
-    ctx.fillText(target, CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 8)
-    ctx.restore()
+    const strokes = numberStrokes[target] ?? []
+    if (strokes.length === 0) {
+      ctx.save()
+      ctx.font = `bold 230px "Trebuchet MS", sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.strokeStyle = GUIDE_COLOR
+      ctx.lineWidth = 4
+      ctx.globalAlpha = 0.55
+      ctx.setLineDash([8, 7])
+      ctx.strokeText(target, CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 8)
+      ctx.fillStyle = GUIDE_COLOR
+      ctx.globalAlpha = 0.1
+      ctx.fillText(target, CANVAS_SIZE / 2, CANVAS_SIZE / 2 + 8)
+      ctx.restore()
+    }
 
     // 획순 가이드
-    const strokes = numberStrokes[target] ?? []
     const guideSize = 230
     const guideOffset = (CANVAS_SIZE - guideSize) / 2
     const mapCoord = (value: number) => guideOffset + value * guideSize
@@ -129,6 +162,83 @@ export default function NumberWriting() {
 
     ctx.save()
     strokes.forEach((stroke, index) => {
+      const guidePoints = stroke.map(([x, y]) => ({ x: mapCoord(x), y: mapCoord(y) }))
+      if (strokes.length > 1 && guidePoints.length >= 2) {
+        const pointToSegmentDistance = (
+          point: [number, number],
+          segmentStart: [number, number],
+          segmentEnd: [number, number],
+        ) => {
+          const dx = segmentEnd[0] - segmentStart[0]
+          const dy = segmentEnd[1] - segmentStart[1]
+          const lengthSquared = dx * dx + dy * dy
+          if (lengthSquared === 0) {
+            return Math.hypot(point[0] - segmentStart[0], point[1] - segmentStart[1])
+          }
+          const projection = Math.max(0, Math.min(1,
+            ((point[0] - segmentStart[0]) * dx + (point[1] - segmentStart[1]) * dy)
+              / lengthSquared
+          ))
+          return Math.hypot(
+            point[0] - (segmentStart[0] + projection * dx),
+            point[1] - (segmentStart[1] + projection * dy),
+          )
+        }
+        const endpointIsShared = (point: [number, number]) => strokes.some(
+          (otherStroke, otherIndex) => otherIndex !== index && otherStroke.some(
+            (_, pointIndex) => pointIndex > 0 && pointToSegmentDistance(
+              point,
+              otherStroke[pointIndex - 1],
+              otherStroke[pointIndex],
+            ) < 0.015
+          )
+        )
+        const insetEndpoint = (
+          point: { x: number; y: number },
+          neighbor: { x: number; y: number },
+        ) => {
+          const length = Math.hypot(neighbor.x - point.x, neighbor.y - point.y)
+          if (length === 0) return point
+          const inset = Math.min(16, length * 0.25)
+          return {
+            x: point.x + ((neighbor.x - point.x) / length) * inset,
+            y: point.y + ((neighbor.y - point.y) / length) * inset,
+          }
+        }
+        if (endpointIsShared(stroke[0])) {
+          guidePoints[0] = insetEndpoint(guidePoints[0], guidePoints[1])
+        }
+        const lastIndex = guidePoints.length - 1
+        if (endpointIsShared(stroke[lastIndex])) {
+          guidePoints[lastIndex] = insetEndpoint(guidePoints[lastIndex], guidePoints[lastIndex - 1])
+        }
+      }
+
+      // 채움 영역과 획순선이 동일한 경로를 사용한다.
+      ctx.beginPath()
+      ctx.setLineDash([])
+      ctx.strokeStyle = GUIDE_COLOR
+      ctx.lineWidth = 24
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+      ctx.globalAlpha = 0.22
+      for (let i = 0; i < guidePoints.length; i++) {
+        if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+        else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
+      }
+      ctx.stroke()
+
+      ctx.beginPath()
+      ctx.setLineDash([7, 5])
+      ctx.strokeStyle = GUIDE_COLOR
+      ctx.lineWidth = 3
+      ctx.globalAlpha = 0.7
+      for (let i = 0; i < guidePoints.length; i++) {
+        if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+        else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
+      }
+      ctx.stroke()
+
       ctx.globalAlpha = 0.35
       ctx.strokeStyle = STROKE_GUIDE_COLOR
       ctx.lineWidth = 4
@@ -136,42 +246,42 @@ export default function NumberWriting() {
       ctx.lineJoin = 'round'
       ctx.setLineDash([8, 6])
       ctx.beginPath()
-      for (let i = 0; i < stroke.length; i++) {
-        const x = mapCoord(stroke[i][0])
-        const y = mapCoord(stroke[i][1])
-        if (i === 0) ctx.moveTo(x, y)
-        else ctx.lineTo(x, y)
+      for (let i = 0; i < guidePoints.length; i++) {
+        if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+        else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
       }
       ctx.stroke()
 
-      const startX = mapCoord(stroke[0][0])
-      const startY = mapCoord(stroke[0][1])
-      const endX = mapCoord(stroke[stroke.length - 1][0])
-      const endY = mapCoord(stroke[stroke.length - 1][1])
-      const prevIdx = stroke.length >= 2 ? stroke.length - 2 : 0
-      const prevX = mapCoord(stroke[prevIdx][0])
-      const prevY = mapCoord(stroke[prevIdx][1])
+      const startX = guidePoints[0].x
+      const startY = guidePoints[0].y
+      const endX = guidePoints[guidePoints.length - 1].x
+      const endY = guidePoints[guidePoints.length - 1].y
+      const prevIdx = guidePoints.length >= 2 ? guidePoints.length - 2 : 0
+      const prevX = guidePoints[prevIdx].x
+      const prevY = guidePoints[prevIdx].y
       const angle = Math.hypot(endX - prevX, endY - prevY) < 4
         ? Math.PI
         : Math.atan2(endY - prevY, endX - prevX)
 
       const direction = Math.atan2(
-        mapCoord(stroke[Math.min(1, stroke.length - 1)][1]) - startY,
-        mapCoord(stroke[Math.min(1, stroke.length - 1)][0]) - startX
+        (guidePoints[1]?.y ?? startY) - startY,
+        (guidePoints[1]?.x ?? startX) - startX
       )
       const candidateAngles = [direction - Math.PI / 2, direction + Math.PI / 2, direction + Math.PI]
-      const candidates = [20, 30, 40].flatMap((distance) =>
+      const anchorX = startX + ((guidePoints[1]?.x ?? startX) - startX) * 0.12
+      const anchorY = startY + ((guidePoints[1]?.y ?? startY) - startY) * 0.12
+      const candidates = [16, 26, 36, 46].flatMap((distance) =>
         candidateAngles.map((a) => ({
-          x: startX + Math.cos(a) * distance,
-          y: startY + Math.sin(a) * distance,
+          x: anchorX + Math.cos(a) * distance,
+          y: anchorY + Math.sin(a) * distance,
         }))
       )
       const position = candidates.find((c) => {
         const inside = c.x >= 14 && c.x <= CANVAS_SIZE - 14 && c.y >= 14 && c.y <= CANVAS_SIZE - 14
-        return inside && labels.every((l) => Math.hypot(c.x - l.x, c.y - l.y) >= 27)
+        return inside && labels.every((l) => Math.hypot(c.x - l.x, c.y - l.y) >= 30)
       }) ?? { x: startX, y: startY }
 
-      labels.push({ ...position, startX, startY, number: index + 1 })
+      labels.push({ ...position, startX: anchorX, startY: anchorY, number: index + 1 })
 
       const arrowSize = 14
       ctx.globalAlpha = 0.4
@@ -186,26 +296,21 @@ export default function NumberWriting() {
     })
 
     labels.forEach((label) => {
-      ctx.globalAlpha = 0.3
-      ctx.strokeStyle = STROKE_GUIDE_COLOR
-      ctx.lineWidth = 1.5
-      ctx.setLineDash([])
-      ctx.beginPath()
-      ctx.moveTo(label.startX, label.startY)
-      ctx.lineTo(label.x, label.y)
-      ctx.stroke()
-
       ctx.globalAlpha = 1
       ctx.beginPath()
-      ctx.arc(label.x, label.y, 15, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
+      ctx.arc(label.startX, label.startY, 4, 0, Math.PI * 2)
+      ctx.fillStyle = STROKE_GUIDE_COLOR
       ctx.fill()
+
       ctx.beginPath()
-      ctx.arc(label.x, label.y, 12.5, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(236, 72, 153, 0.5)'
+      ctx.arc(label.x, label.y, 8, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
       ctx.fill()
-      ctx.fillStyle = '#ffffff'
-      ctx.font = 'bold 14px sans-serif'
+      ctx.strokeStyle = STROKE_GUIDE_COLOR
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+      ctx.fillStyle = STROKE_GUIDE_COLOR
+      ctx.font = 'bold 9px sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(String(label.number), label.x, label.y)
@@ -225,9 +330,13 @@ export default function NumberWriting() {
 
   const startDraw = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.preventDefault()
+    if (isAdvancingRef.current) return
+    if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
     event.currentTarget.setPointerCapture(event.pointerId)
     const point = getPosition(event)
     setIsDrawing(true)
+    setScore(null)
     lastPoint.current = point
     const ctx = canvasRef.current?.getContext('2d')
     if (ctx) {
@@ -257,18 +366,62 @@ export default function NumberWriting() {
     lastPoint.current = point
   }
 
+  const handlePassed = useCallback((expectedVersion: number) => {
+    if (expectedVersion !== targetVersionRef.current) return
+    if (isAdvancingRef.current) return
+    isAdvancingRef.current = true
+    setScore(100)
+    autoNextTimer.current = setTimeout(() => {
+      if (expectedVersion !== targetVersionRef.current) return
+      setCurrentIndex((index) => (index + 1) % list.length)
+      setScore(null)
+    }, 900)
+  }, [list.length])
+
+  const checkBasicDrawing = useCallback((expectedVersion: number) => {
+    if (expectedVersion !== targetVersionRef.current || isAdvancingRef.current) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    if (countDrawnPixels(canvas) > 250) handlePassed(expectedVersion)
+    else setScore(0)
+  }, [handlePassed])
+
   const endDraw = () => {
     setIsDrawing(false)
     lastPoint.current = null
+    const expectedVersion = targetVersionRef.current
+    checkTimer.current = setTimeout(() => checkBasicDrawing(expectedVersion), 1200)
+  }
+
+  const scheduleHundredsCheck = () => {
+    if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
+    setScore(null)
+    const expectedVersion = targetVersionRef.current
+    checkTimer.current = setTimeout(() => {
+      if (expectedVersion !== targetVersionRef.current || isAdvancingRef.current) return
+      const canvases = [...(hundredsContainerRef.current?.querySelectorAll('canvas') ?? [])]
+      const passed = canvases.length > 0 && canvases.every((canvas) => countDrawnPixels(canvas) > 200)
+      if (passed) handlePassed(expectedVersion)
+      else setScore(0)
+    }, 1200)
   }
 
   const move = (direction: -1 | 1) => {
+    if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
+    isAdvancingRef.current = false
     setCurrentIndex((i) => (i + direction + list.length) % list.length)
+    setScore(null)
   }
 
   const changeMode = (newMode: Mode) => {
+    if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
+    isAdvancingRef.current = false
     setMode(newMode)
     setCurrentIndex(0)
+    setScore(null)
   }
 
   const speakNumber = () => {
@@ -309,7 +462,12 @@ export default function NumberWriting() {
               <Volume2 size={20} className="text-blue-500" />
             </motion.button>
 
-            <div className="flex justify-center gap-3 mb-6">
+            <div
+              ref={hundredsContainerRef}
+              onPointerUp={scheduleHundredsCheck}
+              onPointerCancel={scheduleHundredsCheck}
+              className="flex justify-center gap-3 mb-6"
+            >
               {[...target].map((digit, i) => (
                 <DigitCanvas key={`${target}-${i}`} char={digit} />
               ))}
@@ -377,6 +535,11 @@ export default function NumberWriting() {
         <div className="text-center text-xs text-gray-400">{currentIndex + 1} / {list.length}</div>
           </div>
         )}
+
+        <div className="mt-3 h-8 text-center text-sm font-semibold">
+          {score === 100 && <span className="text-emerald-600">잘했어요! 다음 숫자로 넘어갈게요.</span>}
+          {score === 0 && <span className="text-amber-600">숫자를 조금 더 써보세요.</span>}
+        </div>
       </main>
     </div>
   )

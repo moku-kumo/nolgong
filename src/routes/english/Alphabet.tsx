@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import GameLayout from '@/components/game/GameLayout'
 import OptionGrid from '@/components/game/OptionGrid'
 import Feedback from '@/components/game/Feedback'
@@ -8,6 +8,7 @@ import { useSettingsStore, type AlphabetMode } from '@/stores/settingsStore'
 import { alphabet } from '@/data/alphabet'
 import { randInt, shuffle } from '@/lib/random'
 import { playCorrect, playWrong } from '@/lib/audio'
+import { useSpeech } from '@/hooks/useSpeech'
 
 function generateProblem(mode: AlphabetMode) {
   const idx = randInt(0, 25)
@@ -30,9 +31,15 @@ function generateProblem(mode: AlphabetMode) {
 export default function Alphabet() {
   const { timerEnabled, timerSeconds, soundEnabled, englishSettings } = useSettingsStore()
   const { score, total, addCorrect, addWrong } = useScore('english/alphabet')
+  const { speak } = useSpeech()
   const [problem, setProblem] = useState(() => generateProblem(englishSettings.alphabetMode))
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [timerKey, setTimerKey] = useState(0)
+
+  // 문제가 바뀔 때 알파벳 발음 재생
+  useEffect(() => {
+    speak(problem.question, 'en-US', 0.8)
+  }, [problem.question, speak])
 
   const next = useCallback(() => {
     setProblem(generateProblem(englishSettings.alphabetMode))

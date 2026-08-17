@@ -11,11 +11,12 @@ import { useSpeech } from '@/hooks/useSpeech'
 type PracticeMode = 'alphabet' | 'first'
 
 const CANVAS_SIZE = 340
-const WORD_CANVAS_WIDTH = 128
-const WORD_CANVAS_HEIGHT = 144
+const WORD_CANVAS_WIDTH = 260
+const WORD_CANVAS_HEIGHT = 290
 const DRAW_COLOR = '#7c3aed'
-const GUIDE_COLOR = '#5eead4'
+const GUIDE_COLOR = '#16a34a'
 const STROKE_GUIDE_COLOR = '#ec4899'
+const GUIDE_FONT = 'Fredoka Variable'
 const letterSequence = alphabet.upper.flatMap((upper, index) => [upper, alphabet.lower[index]])
 const fallbackWords: Record<string, WordEntry> = {
   x: { en: 'xylophone', ko: '실로폰', emoji: '🎵' },
@@ -32,6 +33,9 @@ export default function EnglishWriting() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const lastPoint = useRef<{ x: number; y: number } | null>(null)
   const checkTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoNextTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isAdvancingRef = useRef(false)
+  const targetVersionRef = useRef(0)
   const [mode, setMode] = useState<PracticeMode>('alphabet')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isDrawing, setIsDrawing] = useState(false)
@@ -44,24 +48,33 @@ export default function EnglishWriting() {
   const canvasHeight = mode === 'first' ? WORD_CANVAS_HEIGHT : CANVAS_SIZE
   const itemCount = mode === 'first' ? alphabet.upper.length : letterSequence.length
 
+  // 처음 로드 시 및 글자 변경 시 TTS 재생
+  useEffect(() => {
+    targetVersionRef.current += 1
+    isAdvancingRef.current = false
+    if (soundEnabled) speak(currentWord?.en ?? target, 'en-US')
+  }, [target, currentWord, soundEnabled, speak])
+
   const drawGuide = useCallback(() => {
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
 
     ctx.clearRect(0, 0, canvasWidth, canvasHeight)
-    ctx.save()
-    ctx.font = `bold ${mode === 'first' ? 108 : 230}px "Trebuchet MS", sans-serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.strokeStyle = GUIDE_COLOR
-    ctx.lineWidth = mode === 'first' ? 4 : 4
-    ctx.globalAlpha = 0.55
-    ctx.setLineDash(mode === 'first' ? [7, 5] : [8, 7])
-    ctx.strokeText(target, canvasWidth / 2, canvasHeight / 2 + (mode === 'first' ? 2 : 8))
-    ctx.fillStyle = GUIDE_COLOR
-    ctx.globalAlpha = 0.1
-    ctx.fillText(target, canvasWidth / 2, canvasHeight / 2 + (mode === 'first' ? 2 : 8))
-    ctx.restore()
+    if (mode === 'first') {
+      ctx.save()
+      ctx.font = `600 200px "${GUIDE_FONT}", sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.strokeStyle = GUIDE_COLOR
+      ctx.lineWidth = 5
+      ctx.globalAlpha = 0.55
+      ctx.setLineDash([8, 6])
+      ctx.strokeText(target, canvasWidth / 2, canvasHeight / 2 + 4)
+      ctx.fillStyle = GUIDE_COLOR
+      ctx.globalAlpha = 0.15
+      ctx.fillText(target, canvasWidth / 2, canvasHeight / 2 + 4)
+      ctx.restore()
+    }
 
     if (mode === 'alphabet') {
       const strokes = englishStrokes[target] ?? []
@@ -72,6 +85,83 @@ export default function EnglishWriting() {
 
       ctx.save()
       strokes.forEach((stroke, index) => {
+        const guidePoints = stroke.map(([x, y]) => ({ x: mapCoord(x), y: mapCoord(y) }))
+        if (strokes.length > 1 && guidePoints.length >= 2) {
+          const pointToSegmentDistance = (
+            point: [number, number],
+            segmentStart: [number, number],
+            segmentEnd: [number, number],
+          ) => {
+            const dx = segmentEnd[0] - segmentStart[0]
+            const dy = segmentEnd[1] - segmentStart[1]
+            const lengthSquared = dx * dx + dy * dy
+            if (lengthSquared === 0) {
+              return Math.hypot(point[0] - segmentStart[0], point[1] - segmentStart[1])
+            }
+            const projection = Math.max(0, Math.min(1,
+              ((point[0] - segmentStart[0]) * dx + (point[1] - segmentStart[1]) * dy)
+                / lengthSquared
+            ))
+            return Math.hypot(
+              point[0] - (segmentStart[0] + projection * dx),
+              point[1] - (segmentStart[1] + projection * dy),
+            )
+          }
+          const endpointIsShared = (point: [number, number]) => strokes.some(
+            (otherStroke, otherIndex) => otherIndex !== index && otherStroke.some(
+              (_, pointIndex) => pointIndex > 0 && pointToSegmentDistance(
+                point,
+                otherStroke[pointIndex - 1],
+                otherStroke[pointIndex],
+              ) < 0.015
+            )
+          )
+          const insetEndpoint = (
+            point: { x: number; y: number },
+            neighbor: { x: number; y: number },
+          ) => {
+            const length = Math.hypot(neighbor.x - point.x, neighbor.y - point.y)
+            if (length === 0) return point
+            const inset = Math.min(16, length * 0.25)
+            return {
+              x: point.x + ((neighbor.x - point.x) / length) * inset,
+              y: point.y + ((neighbor.y - point.y) / length) * inset,
+            }
+          }
+          if (endpointIsShared(stroke[0])) {
+            guidePoints[0] = insetEndpoint(guidePoints[0], guidePoints[1])
+          }
+          const lastIndex = guidePoints.length - 1
+          if (endpointIsShared(stroke[lastIndex])) {
+            guidePoints[lastIndex] = insetEndpoint(guidePoints[lastIndex], guidePoints[lastIndex - 1])
+          }
+        }
+
+        // 채움 영역과 획순선이 동일한 경로를 사용한다.
+        ctx.beginPath()
+        ctx.setLineDash([])
+        ctx.strokeStyle = GUIDE_COLOR
+        ctx.lineWidth = 24
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+        ctx.globalAlpha = 0.22
+        for (let i = 0; i < guidePoints.length; i++) {
+          if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+          else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
+        }
+        ctx.stroke()
+
+        ctx.beginPath()
+        ctx.setLineDash([7, 5])
+        ctx.strokeStyle = GUIDE_COLOR
+        ctx.lineWidth = 3
+        ctx.globalAlpha = 0.7
+        for (let i = 0; i < guidePoints.length; i++) {
+          if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+          else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
+        }
+        ctx.stroke()
+
         // 점선 경로
         ctx.globalAlpha = 0.35
         ctx.strokeStyle = STROKE_GUIDE_COLOR
@@ -80,48 +170,48 @@ export default function EnglishWriting() {
         ctx.lineJoin = 'round'
         ctx.setLineDash([8, 6])
         ctx.beginPath()
-        for (let i = 0; i < stroke.length; i++) {
-          const x = mapCoord(stroke[i][0])
-          const y = mapCoord(stroke[i][1])
-          if (i === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
+        for (let i = 0; i < guidePoints.length; i++) {
+          if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+          else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
         }
         ctx.stroke()
 
         // 화살표 방향 계산
-        const startX = mapCoord(stroke[0][0])
-        const startY = mapCoord(stroke[0][1])
-        const endX = mapCoord(stroke[stroke.length - 1][0])
-        const endY = mapCoord(stroke[stroke.length - 1][1])
-        const prevIdx = stroke.length >= 2 ? stroke.length - 2 : 0
-        const prevX = mapCoord(stroke[prevIdx][0])
-        const prevY = mapCoord(stroke[prevIdx][1])
+        const startX = guidePoints[0].x
+        const startY = guidePoints[0].y
+        const endX = guidePoints[guidePoints.length - 1].x
+        const endY = guidePoints[guidePoints.length - 1].y
+        const prevIdx = guidePoints.length >= 2 ? guidePoints.length - 2 : 0
+        const prevX = guidePoints[prevIdx].x
+        const prevY = guidePoints[prevIdx].y
         const angle = Math.hypot(endX - prevX, endY - prevY) < 4
           ? Math.PI
           : Math.atan2(endY - prevY, endX - prevX)
 
         // 번호 위치 탐색
         const direction = Math.atan2(
-          mapCoord(stroke[Math.min(1, stroke.length - 1)][1]) - startY,
-          mapCoord(stroke[Math.min(1, stroke.length - 1)][0]) - startX
+          (guidePoints[1]?.y ?? startY) - startY,
+          (guidePoints[1]?.x ?? startX) - startX
         )
         const candidateAngles = [direction - Math.PI / 2, direction + Math.PI / 2, direction + Math.PI, direction - Math.PI / 4, direction + Math.PI / 4]
-        const candidates = [20, 30, 40].flatMap((distance) =>
+        const anchorX = startX + ((guidePoints[1]?.x ?? startX) - startX) * 0.12
+        const anchorY = startY + ((guidePoints[1]?.y ?? startY) - startY) * 0.12
+        const candidates = [16, 26, 36, 46].flatMap((distance) =>
           candidateAngles.map((candidateAngle) => ({
-            x: startX + Math.cos(candidateAngle) * distance,
-            y: startY + Math.sin(candidateAngle) * distance,
+            x: anchorX + Math.cos(candidateAngle) * distance,
+            y: anchorY + Math.sin(candidateAngle) * distance,
           }))
         )
         const position = candidates.find((candidate) => {
           const inside = candidate.x >= 14 && candidate.x <= CANVAS_SIZE - 14
             && candidate.y >= 14 && candidate.y <= CANVAS_SIZE - 14
           const separated = labels.every(
-            (label) => Math.hypot(candidate.x - label.x, candidate.y - label.y) >= 27
+            (label) => Math.hypot(candidate.x - label.x, candidate.y - label.y) >= 30
           )
           return inside && separated
         }) ?? { x: startX, y: startY }
 
-        labels.push({ ...position, startX, startY, number: index + 1 })
+        labels.push({ ...position, startX: anchorX, startY: anchorY, number: index + 1 })
 
         // 화살표
         const arrowSize = 14
@@ -143,26 +233,21 @@ export default function EnglishWriting() {
       })
 
       labels.forEach((label) => {
-        ctx.globalAlpha = 0.3
-        ctx.strokeStyle = STROKE_GUIDE_COLOR
-        ctx.lineWidth = 1.5
-        ctx.setLineDash([])
-        ctx.beginPath()
-        ctx.moveTo(label.startX, label.startY)
-        ctx.lineTo(label.x, label.y)
-        ctx.stroke()
-
         ctx.globalAlpha = 1
         ctx.beginPath()
-        ctx.arc(label.x, label.y, 15, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
+        ctx.arc(label.startX, label.startY, 4, 0, Math.PI * 2)
+        ctx.fillStyle = STROKE_GUIDE_COLOR
         ctx.fill()
+
         ctx.beginPath()
-        ctx.arc(label.x, label.y, 12.5, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(236, 72, 153, 0.9)'
+        ctx.arc(label.x, label.y, 8, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
         ctx.fill()
-        ctx.fillStyle = '#ffffff'
-        ctx.font = 'bold 14px sans-serif'
+        ctx.strokeStyle = STROKE_GUIDE_COLOR
+        ctx.lineWidth = 1.5
+        ctx.stroke()
+        ctx.fillStyle = STROKE_GUIDE_COLOR
+        ctx.font = 'bold 9px sans-serif'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillText(String(label.number), label.x, label.y)
@@ -177,6 +262,7 @@ export default function EnglishWriting() {
 
   useEffect(() => () => {
     if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
   }, [])
 
   const getPosition = (event: React.PointerEvent<HTMLCanvasElement>) => {
@@ -189,7 +275,9 @@ export default function EnglishWriting() {
 
   const startDraw = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.preventDefault()
+    if (isAdvancingRef.current) return
     if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
     event.currentTarget.setPointerCapture(event.pointerId)
     const point = getPosition(event)
     const ctx = canvasRef.current?.getContext('2d')
@@ -198,7 +286,7 @@ export default function EnglishWriting() {
     lastPoint.current = point
     if (!ctx) return
     ctx.beginPath()
-    ctx.arc(point.x, point.y, mode === 'first' ? 5 : 5.5, 0, Math.PI * 2)
+    ctx.arc(point.x, point.y, mode === 'first' ? 6 : 5.5, 0, Math.PI * 2)
     ctx.fillStyle = DRAW_COLOR
     ctx.fill()
   }
@@ -213,7 +301,7 @@ export default function EnglishWriting() {
       ctx.moveTo(lastPoint.current.x, lastPoint.current.y)
       ctx.lineTo(point.x, point.y)
       ctx.strokeStyle = DRAW_COLOR
-      ctx.lineWidth = mode === 'first' ? 10 : 11
+      ctx.lineWidth = mode === 'first' ? 12 : 11
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
       ctx.setLineDash([])
@@ -222,7 +310,8 @@ export default function EnglishWriting() {
     lastPoint.current = point
   }
 
-  const checkDrawing = useCallback(() => {
+  const checkDrawing = useCallback((expectedVersion: number) => {
+    if (expectedVersion !== targetVersionRef.current || isAdvancingRef.current) return
     const ctx = canvasRef.current?.getContext('2d')
     if (!ctx) return
     const pixels = ctx.getImageData(0, 0, canvasWidth, canvasHeight).data
@@ -234,29 +323,45 @@ export default function EnglishWriting() {
       const alpha = pixels[index + 3]
       if (alpha > 50 && blue > 150 && red > 50 && green < 150) drawnPixels++
     }
-    setScore(drawnPixels > (mode === 'first' ? 80 : 250) ? 100 : 0)
-  }, [canvasHeight, canvasWidth, mode])
+    const passed = drawnPixels > (mode === 'first' ? 300 : 250)
+    setScore(passed ? 100 : 0)
+    if (passed && !isAdvancingRef.current) {
+      isAdvancingRef.current = true
+      autoNextTimer.current = setTimeout(() => {
+        if (expectedVersion !== targetVersionRef.current) return
+        setCurrentIndex((index) => (index + 1) % itemCount)
+        setScore(null)
+      }, 900)
+    }
+  }, [canvasHeight, canvasWidth, itemCount, mode])
 
   const endDraw = () => {
     if (!isDrawing) return
     setIsDrawing(false)
     lastPoint.current = null
-    checkTimer.current = setTimeout(checkDrawing, 3000)
+    const expectedVersion = targetVersionRef.current
+    checkTimer.current = setTimeout(() => checkDrawing(expectedVersion), 1200)
   }
 
   const resetCanvas = useCallback(() => {
     if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
+    isAdvancingRef.current = false
     setScore(null)
     drawGuide()
   }, [drawGuide])
 
   const changeMode = (nextMode: PracticeMode) => {
+    isAdvancingRef.current = false
     setMode(nextMode)
     setCurrentIndex(0)
     setScore(null)
   }
 
   const move = (direction: -1 | 1) => {
+    if (checkTimer.current) clearTimeout(checkTimer.current)
+    if (autoNextTimer.current) clearTimeout(autoNextTimer.current)
+    isAdvancingRef.current = false
     setCurrentIndex((index) => (index + direction + itemCount) % itemCount)
     setScore(null)
   }
@@ -281,7 +386,7 @@ export default function EnglishWriting() {
         <div className="mb-5 grid grid-cols-2 gap-3">
           {([
             ['alphabet', '대/소문자'],
-            ['first', '철 글자'],
+            ['first', '첫 글자'],
           ] as const).map(([value, label]) => (
             <button
               key={value}
@@ -303,8 +408,8 @@ export default function EnglishWriting() {
             className="mb-6 flex min-h-60 flex-col items-center justify-center gap-4 rounded-2xl border border-emerald-100 bg-white px-5 py-5 shadow-sm"
           >
             <div className="flex min-w-0 items-end justify-center">
-              <div className="relative h-36 w-32 shrink-0 overflow-hidden rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/30">
-                <div className="pointer-events-none absolute inset-x-0 bottom-6 h-px bg-emerald-200/70" />
+              <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-green-400 bg-green-50/40" style={{ width: 260, height: 290 }}>
+                <div className="pointer-events-none absolute inset-x-0 bottom-12 h-px bg-green-400/70" />
                 <canvas
                   ref={canvasRef}
                   width={WORD_CANVAS_WIDTH}
@@ -316,7 +421,7 @@ export default function EnglishWriting() {
                   onPointerCancel={endDraw}
                 />
               </div>
-              <span className={`${currentWord.en.length > 7 ? 'text-2xl' : 'text-4xl'} pb-5 font-bold text-gray-800`}>
+              <span className={`${currentWord.en.length > 7 ? 'text-2xl' : 'text-4xl'} pb-8 font-bold text-gray-800`}>
                 {currentWord.en.slice(1)}
               </span>
             </div>
@@ -342,16 +447,16 @@ export default function EnglishWriting() {
             </motion.button>
 
             <div className="mb-6 flex justify-center">
-              <div className="relative aspect-square w-full max-w-[340px] overflow-hidden rounded-2xl border-2 border-dashed border-emerald-200 bg-white shadow-inner">
+              <div className="relative aspect-square w-full max-w-[340px] overflow-hidden rounded-2xl border-2 border-dashed border-green-400 bg-white shadow-inner">
                 <div
                   className="pointer-events-none absolute inset-0"
                   style={{
-                    backgroundImage: 'linear-gradient(to right, #d1fae5 1px, transparent 1px), linear-gradient(to bottom, #d1fae5 1px, transparent 1px)',
+                    backgroundImage: 'linear-gradient(to right, #bbf7d0 1px, transparent 1px), linear-gradient(to bottom, #bbf7d0 1px, transparent 1px)',
                     backgroundSize: '85px 85px',
                   }}
                 />
-                <div className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-emerald-200/60" />
-                <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px bg-emerald-200/60" />
+                <div className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-green-400/70" />
+                <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px bg-green-400/70" />
                 <canvas
                   ref={canvasRef}
                   width={CANVAS_SIZE}

@@ -66,7 +66,7 @@ const wordListWithEmoji: { word: string; emoji: string }[] = [
   { word: '이름', emoji: '📝' }, { word: '다리', emoji: '🌉' }, { word: '머리', emoji: '👤' },
 ]
 
-const SYLLABLE_SIZE = 140
+const SYLLABLE_SIZE = 280
 
 // 한글 음절 분해 (초성 + 중성 + 종성)
 const CHOSEONG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
@@ -94,12 +94,12 @@ function SyllableCanvas({ char, showGuide }: { char: string; showGuide: boolean 
     ctx.clearRect(0, 0, SYLLABLE_SIZE, SYLLABLE_SIZE)
     if (showGuide) {
       ctx.save()
-      ctx.font = `bold 100px sans-serif`
+      ctx.font = `bold 200px sans-serif`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.strokeStyle = GUIDE_COLOR
-      ctx.lineWidth = 2.5
-      ctx.setLineDash([5, 4])
+      ctx.lineWidth = 4
+      ctx.setLineDash([8, 6])
       ctx.strokeText(char, SYLLABLE_SIZE / 2, SYLLABLE_SIZE / 2)
       ctx.fillStyle = GUIDE_COLOR
       ctx.globalAlpha = 0.25
@@ -196,6 +196,14 @@ export default function Writing() {
   const currentChar = currentList[currentIndex]
   const currentWordEntry = tab === 'word' ? shuffledWords[currentIndex] : undefined
 
+  // 처음 로드 시 및 탭/인덱스 변경 시 TTS 재생
+  useEffect(() => {
+    if (soundEnabled) {
+      const jamo = jamoList.find((j) => j.char === currentChar)
+      speak(jamo ? jamo.name : currentChar, 'ko-KR')
+    }
+  }, [currentChar, soundEnabled, speak])
+
   // 캔버스 초기화
   const clearCanvas = useCallback(() => {
     const canvas = canvasRef.current
@@ -214,23 +222,22 @@ export default function Writing() {
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
 
     if (mode === 'trace' && showGuide) {
-      ctx.save()
-      ctx.font = `bold ${currentChar.length > 1 ? 130 : 220}px sans-serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      // 점선 효과
-      ctx.strokeStyle = GUIDE_COLOR
-      ctx.lineWidth = 3
-      ctx.setLineDash([6, 4])
-      ctx.strokeText(currentChar, CANVAS_SIZE / 2, CANVAS_SIZE / 2)
-      // 연한 채우기
-      ctx.fillStyle = GUIDE_COLOR
-      ctx.globalAlpha = 0.3
-      ctx.fillText(currentChar, CANVAS_SIZE / 2, CANVAS_SIZE / 2)
-      ctx.restore()
-
       // 획순 가이드 그리기
       const strokes = jamoStrokes[currentChar]
+      if (!strokes) {
+        ctx.save()
+        ctx.font = `bold ${currentChar.length > 1 ? 130 : 220}px sans-serif`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.strokeStyle = GUIDE_COLOR
+        ctx.lineWidth = 3
+        ctx.setLineDash([6, 4])
+        ctx.strokeText(currentChar, CANVAS_SIZE / 2, CANVAS_SIZE / 2)
+        ctx.fillStyle = GUIDE_COLOR
+        ctx.globalAlpha = 0.3
+        ctx.fillText(currentChar, CANVAS_SIZE / 2, CANVAS_SIZE / 2)
+        ctx.restore()
+      }
       if (strokes) {
         // 글자 크기에 맞게 스케일링 (220px 폰트가 340px 캔버스 중앙에 렌더링됨)
         const charSize = currentChar.length > 1 ? 130 : 200
@@ -241,6 +248,88 @@ export default function Writing() {
 
         ctx.save()
         strokes.forEach((stroke, idx) => {
+          const guidePoints = stroke.map(([x, y]) => ({ x: mapCoord(x), y: mapCoord(y) }))
+          if (strokes.length > 1 && guidePoints.length >= 2) {
+            const pointToSegmentDistance = (
+              point: [number, number],
+              segmentStart: [number, number],
+              segmentEnd: [number, number],
+            ) => {
+              const dx = segmentEnd[0] - segmentStart[0]
+              const dy = segmentEnd[1] - segmentStart[1]
+              const lengthSquared = dx * dx + dy * dy
+              if (lengthSquared === 0) {
+                return Math.hypot(point[0] - segmentStart[0], point[1] - segmentStart[1])
+              }
+              const projection = Math.max(0, Math.min(1,
+                ((point[0] - segmentStart[0]) * dx + (point[1] - segmentStart[1]) * dy)
+                  / lengthSquared
+              ))
+              return Math.hypot(
+                point[0] - (segmentStart[0] + projection * dx),
+                point[1] - (segmentStart[1] + projection * dy),
+              )
+            }
+            const endpointIsShared = (point: [number, number]) => strokes.some(
+              (otherStroke, otherIndex) => otherIndex !== idx && otherStroke.some(
+                (_, pointIndex) => pointIndex > 0 && pointToSegmentDistance(
+                  point,
+                  otherStroke[pointIndex - 1],
+                  otherStroke[pointIndex],
+                ) < 0.015
+              )
+            )
+            const insetEndpoint = (
+              point: { x: number; y: number },
+              neighbor: { x: number; y: number },
+              distance: number,
+            ) => {
+              const length = Math.hypot(neighbor.x - point.x, neighbor.y - point.y)
+              if (length === 0) return point
+              const inset = Math.min(distance, length * 0.2)
+              return {
+                x: point.x + ((neighbor.x - point.x) / length) * inset,
+                y: point.y + ((neighbor.y - point.y) / length) * inset,
+              }
+            }
+            if (endpointIsShared(stroke[0])) {
+              guidePoints[0] = insetEndpoint(guidePoints[0], guidePoints[1], 12)
+            }
+            const lastIndex = guidePoints.length - 1
+            if (endpointIsShared(stroke[lastIndex])) {
+              guidePoints[lastIndex] = insetEndpoint(
+                guidePoints[lastIndex],
+                guidePoints[lastIndex - 1],
+                12,
+              )
+            }
+          }
+
+          // 채움 영역과 획순선이 동일한 경로를 사용한다.
+          ctx.beginPath()
+          ctx.setLineDash([])
+          ctx.strokeStyle = GUIDE_COLOR
+          ctx.lineWidth = 24
+          ctx.lineCap = 'round'
+          ctx.lineJoin = 'round'
+          ctx.globalAlpha = 0.22
+          for (let i = 0; i < guidePoints.length; i++) {
+            if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+            else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
+          }
+          ctx.stroke()
+
+          ctx.beginPath()
+          ctx.setLineDash([7, 5])
+          ctx.strokeStyle = GUIDE_COLOR
+          ctx.lineWidth = 3
+          ctx.globalAlpha = 0.7
+          for (let i = 0; i < guidePoints.length; i++) {
+            if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+            else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
+          }
+          ctx.stroke()
+
           // 점선 경로
           ctx.beginPath()
           ctx.setLineDash([8, 6])
@@ -249,20 +338,20 @@ export default function Writing() {
           ctx.lineCap = 'round'
           ctx.lineJoin = 'round'
           ctx.globalAlpha = 0.35
-          for (let i = 0; i < stroke.length; i++) {
-            const x = mapCoord(stroke[i][0])
-            const y = mapCoord(stroke[i][1])
-            if (i === 0) ctx.moveTo(x, y)
-            else ctx.lineTo(x, y)
+          for (let i = 0; i < guidePoints.length; i++) {
+            if (i === 0) ctx.moveTo(guidePoints[i].x, guidePoints[i].y)
+            else ctx.lineTo(guidePoints[i].x, guidePoints[i].y)
           }
           ctx.stroke()
 
-          // 시작점 주변의 빈 위치를 찾아 번호를 배치
-          const startX = mapCoord(stroke[0][0])
-          const startY = mapCoord(stroke[0][1])
-          const nextX = stroke.length >= 2 ? mapCoord(stroke[1][0]) : startX
-          const nextY = stroke.length >= 2 ? mapCoord(stroke[1][1]) : startY
+          // 첫 구간 옆에 번호를 배치해 시작점이 같은 획도 구분한다.
+          const startX = guidePoints[0].x
+          const startY = guidePoints[0].y
+          const nextX = guidePoints[1]?.x ?? startX
+          const nextY = guidePoints[1]?.y ?? startY
           const direction = Math.atan2(nextY - startY, nextX - startX)
+          const anchorX = startX + (nextX - startX) * 0.2
+          const anchorY = startY + (nextY - startY) * 0.2
           const candidateAngles = [
             direction - Math.PI / 2,
             direction + Math.PI / 2,
@@ -270,35 +359,35 @@ export default function Writing() {
             direction - Math.PI / 4,
             direction + Math.PI / 4,
           ]
-          const candidates = [20, 30, 40].flatMap((distance) =>
+          const candidates = [22, 34, 46].flatMap((distance) =>
             candidateAngles.map((angle) => ({
-              x: startX + Math.cos(angle) * distance,
-              y: startY + Math.sin(angle) * distance,
+              x: anchorX + Math.cos(angle) * distance,
+              y: anchorY + Math.sin(angle) * distance,
             }))
           )
           const labelPosition = candidates.find((candidate) => {
             const insideCanvas = candidate.x >= 14 && candidate.x <= CANVAS_SIZE - 14
               && candidate.y >= 14 && candidate.y <= CANVAS_SIZE - 14
             const clearOfLabels = labels.every(
-              (label) => Math.hypot(candidate.x - label.x, candidate.y - label.y) >= 27
+              (label) => Math.hypot(candidate.x - label.x, candidate.y - label.y) >= 42
             )
             return insideCanvas && clearOfLabels
           }) ?? { x: startX, y: startY }
 
           labels.push({
             ...labelPosition,
-            startX,
-            startY,
+            startX: anchorX,
+            startY: anchorY,
             number: idx + 1,
           })
 
           // 끝점에 화살표 표시
-          const endX = mapCoord(stroke[stroke.length - 1][0])
-          const endY = mapCoord(stroke[stroke.length - 1][1])
+          const endX = guidePoints[guidePoints.length - 1].x
+          const endY = guidePoints[guidePoints.length - 1].y
           // 화살표 방향 계산 (마지막 두 점 기준)
-          const prevIdx = stroke.length >= 2 ? stroke.length - 2 : 0
-          const prevX = mapCoord(stroke[prevIdx][0])
-          const prevY = mapCoord(stroke[prevIdx][1])
+          const prevIdx = guidePoints.length >= 2 ? guidePoints.length - 2 : 0
+          const prevX = guidePoints[prevIdx].x
+          const prevY = guidePoints[prevIdx].y
           const angle = Math.atan2(endY - prevY, endX - prevX)
           const arrowSize = 10
           ctx.setLineDash([])
@@ -321,26 +410,21 @@ export default function Writing() {
         // 번호는 모든 가이드 위에 마지막으로 그려 선에 가려지지 않게 한다.
         labels.forEach((label) => {
           ctx.setLineDash([])
-          ctx.globalAlpha = 0.3
-          ctx.strokeStyle = STROKE_ORDER_COLOR
-          ctx.lineWidth = 1.5
-          ctx.beginPath()
-          ctx.moveTo(label.startX, label.startY)
-          ctx.lineTo(label.x, label.y)
-          ctx.stroke()
-
           ctx.globalAlpha = 1
           ctx.beginPath()
-          ctx.arc(label.x, label.y, 13, 0, Math.PI * 2)
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
+          ctx.arc(label.startX, label.startY, 4, 0, Math.PI * 2)
+          ctx.fillStyle = STROKE_ORDER_COLOR
           ctx.fill()
 
           ctx.beginPath()
-          ctx.arc(label.x, label.y, 10.5, 0, Math.PI * 2)
-          ctx.fillStyle = 'rgba(236, 72, 153, 0.5)'
-          ctx.fill()
+          ctx.arc(label.x, label.y, 8, 0, Math.PI * 2)
           ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
-          ctx.font = 'bold 12px sans-serif'
+          ctx.fill()
+          ctx.strokeStyle = STROKE_ORDER_COLOR
+          ctx.lineWidth = 1.5
+          ctx.stroke()
+          ctx.fillStyle = STROKE_ORDER_COLOR
+          ctx.font = 'bold 9px sans-serif'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.fillText(String(label.number), label.x, label.y)
@@ -504,12 +588,7 @@ export default function Writing() {
     setScore(null)
     setScoreMessage('')
     setPassed(false)
-    if (soundEnabled) {
-      const char = currentList[next]
-      const jamo = jamoList.find((j) => j.char === char)
-      speak(jamo ? jamo.name : char, 'ko-KR')
-    }
-  }, [currentIndex, currentList, tab, clearCanvas, soundEnabled, speak])
+  }, [currentIndex, currentList, tab, clearCanvas])
 
   // ref로 최신 nextChar를 참조 (타이머 콜백용)
   const nextCharRef = useRef(nextChar)
