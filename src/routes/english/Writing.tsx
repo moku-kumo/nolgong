@@ -241,7 +241,7 @@ export default function EnglishWriting() {
     if (!isDrawing) return
     setIsDrawing(false)
     lastPoint.current = null
-    checkTimer.current = setTimeout(checkDrawing, 700)
+    checkTimer.current = setTimeout(checkDrawing, 3000)
   }
 
   const resetCanvas = useCallback(() => {
