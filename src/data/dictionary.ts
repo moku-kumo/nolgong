@@ -46,7 +46,6 @@ export const dictionary: DictEntry[] = [
   { ko: '기린', en: 'giraffe', emoji: '🦒' },
   { ko: '얼룩말', en: 'zebra', emoji: '🦓' },
   { ko: '코뿔소', en: 'rhino', emoji: '🦏' },
-  { ko: '하늘소', emoji: '🪲' },
   { ko: '꿀벌', en: 'bee', emoji: '🐝' },
   { ko: '잠자리', en: 'dragonfly', emoji: '🪰' },
   { ko: '앵무새', en: 'parrot', emoji: '🦜' },
@@ -80,7 +79,7 @@ export const dictionary: DictEntry[] = [
   { ko: '망고', en: 'mango', emoji: '🥭' },
   { ko: '코코넛', en: 'coconut', emoji: '🥥' },
   { ko: '밤', en: 'chestnut', emoji: '🌰' },
-  { ko: '피망', emoji: '🫑' },
+  { ko: '피망', en: 'bell pepper', emoji: '🫑' },
 
   // ── 음식 ──
   { ko: '밥', en: 'rice', emoji: '🍚' },
@@ -90,7 +89,7 @@ export const dictionary: DictEntry[] = [
   { ko: '피자', en: 'pizza', emoji: '🍕' },
   { ko: '햄버거', en: 'hamburger', emoji: '🍔' },
   { ko: '라면', en: 'noodle', emoji: '🍜' },
-  { ko: '주먹밥', emoji: '🍙' },
+  { ko: '주먹밥', en: 'rice ball', emoji: '🍙' },
   { ko: '달걀', en: 'egg', emoji: '🥚' },
   { ko: '아이스크림', en: 'ice cream', emoji: '🍦' },
   { ko: '케이크', en: 'cake', emoji: '🎂' },
@@ -100,7 +99,7 @@ export const dictionary: DictEntry[] = [
   { ko: '도넛', en: 'donut', emoji: '🍩' },
   { ko: '팝콘', en: 'popcorn', emoji: '🍿' },
   { ko: '쿠키', en: 'cookie', emoji: '🍪' },
-  { ko: '떡', emoji: '🍡' },
+  { ko: '떡', en: 'rice cake', emoji: '🍡' },
   { ko: '감자튀김', en: 'french fries', emoji: '🍟' },
   { ko: '핫도그', en: 'hot dog', emoji: '🌭' },
 
@@ -210,7 +209,7 @@ export const dictionary: DictEntry[] = [
   { ko: '문', en: 'door', emoji: '🚪' },
   { ko: '칼', en: 'knife', emoji: '🔪' },
   { ko: '컵', en: 'cup', emoji: '🥤' },
-  { ko: '벌', emoji: '🐝' },
+  { ko: '벌', en: 'bee', emoji: '🐝' },
   { ko: '옷', en: 'clothes', emoji: '👕' },
   { ko: '풀', en: 'grass', emoji: '🌿' },
   { ko: '칫솔', en: 'toothbrush', emoji: '🪥' },
@@ -250,13 +249,13 @@ export const dictionary: DictEntry[] = [
   { ko: '전구', en: 'light bulb', emoji: '💡' },
   { ko: '망치', en: 'hammer', emoji: '🔨' },
   { ko: '자석', en: 'magnet', emoji: '🧲' },
-  { ko: '돋보기', emoji: '🔍' },
+  { ko: '돋보기', en: 'magnifying glass', emoji: '🔍' },
   { ko: '종', en: 'bell', emoji: '🔔' },
   { ko: '실', en: 'yarn', emoji: '🧵' },
   { ko: '바늘', en: 'needle', emoji: '🪡' },
   { ko: '빗자루', en: 'broom', emoji: '🧹' },
   { ko: '양동이', en: 'bucket', emoji: '🪣' },
-  { ko: '소화기', emoji: '🧯' },
+  { ko: '소화기', en: 'fire extinguisher', emoji: '🧯' },
 
   // ── 신체 추가 ──
   { ko: '코', en: 'nose', emoji: '👃' },
@@ -275,7 +274,7 @@ export const dictionary: DictEntry[] = [
   { ko: '오렌지', en: 'orange', emoji: '🍊' },
 
   // ── 식사 ──
-  { ko: '식사', emoji: '🍽️' },
+  { ko: '식사', en: 'meal', emoji: '🍽️' },
 ]
 
 /** 영어가 있는 단어만 (PictureWord, ListenWord 용) */
