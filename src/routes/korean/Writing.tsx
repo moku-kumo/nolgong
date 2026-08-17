@@ -18,6 +18,7 @@ const STROKE_ORDER_COLOR = '#ec4899' // 획순 가이드 핑크색
 
 // 자음 + 모음 + 가나다라...기본 글자 (자음×모음 조합)
 const consonants = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
+const doubleConsonants = ['ㄲ', 'ㄸ', 'ㅃ', 'ㅆ', 'ㅉ']
 const vowels = ['ㅏ', 'ㅑ', 'ㅓ', 'ㅕ', 'ㅗ', 'ㅛ', 'ㅜ', 'ㅠ', 'ㅡ', 'ㅣ']
 
 // 자음별 기본 글자 조합 (가갸거겨고교구규그기, 나냐너녀노뇨누뉴느니, ...)
@@ -25,6 +26,8 @@ function buildJamoList(): string[] {
   const list: string[] = []
   // 먼저 자음 전체
   list.push(...consonants)
+  // 쌍자음
+  list.push(...doubleConsonants)
   // 모음 전체
   list.push(...vowels)
   // 자음×모음 조합
@@ -64,6 +67,20 @@ const wordListWithEmoji: { word: string; emoji: string }[] = [
 ]
 
 const SYLLABLE_SIZE = 140
+
+// 한글 음절 분해 (초성 + 중성 + 종성)
+const CHOSEONG = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+const JUNGSEONG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ']
+const JONGSEONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+
+function decompose(char: string): { cho: string; jung: string; jong: string } | null {
+  const code = char.charCodeAt(0) - 0xAC00
+  if (code < 0 || code > 11171) return null
+  const cho = CHOSEONG[Math.floor(code / 588)]
+  const jung = JUNGSEONG[Math.floor((code % 588) / 28)]
+  const jong = JONGSEONG[code % 28]
+  return { cho, jung, jong }
+}
 
 // 음절별 독립 캔버스 컴포넌트
 function SyllableCanvas({ char, showGuide }: { char: string; showGuide: boolean }) {
@@ -596,6 +613,29 @@ export default function Writing() {
                 </button>
               </motion.div>
             </AnimatePresence>
+
+            {/* 받침 분해 표시 */}
+            <div className="flex justify-center gap-4 mb-4">
+              {[...currentChar].map((ch, i) => {
+                const d = decompose(ch)
+                if (!d) return null
+                return (
+                  <div key={i} className="flex items-center gap-1.5 text-sm">
+                    <span className="font-bold text-violet-600">{d.cho}</span>
+                    <span className="text-gray-400">+</span>
+                    <span className="font-bold text-pink-500">{d.jung}</span>
+                    {d.jong && (
+                      <>
+                        <span className="text-gray-400">+</span>
+                        <span className="font-bold text-blue-500">{d.jong}</span>
+                      </>
+                    )}
+                    <span className="text-gray-400 mx-0.5">→</span>
+                    <span className="font-bold text-gray-700">{ch}</span>
+                  </div>
+                )
+              })}
+            </div>
 
             {/* 따라쓰기 칸 */}
             <div className="space-y-3 mb-5">

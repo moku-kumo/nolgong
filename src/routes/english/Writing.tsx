@@ -281,7 +281,7 @@ export default function EnglishWriting() {
         <div className="mb-5 grid grid-cols-2 gap-3">
           {([
             ['alphabet', '대/소문자'],
-            ['first', '첫 글자'],
+            ['first', '철 글자'],
           ] as const).map(([value, label]) => (
             <button
               key={value}
