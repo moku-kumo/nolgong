@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SubjectCard from '@/components/SubjectCard'
 import SettingsModal from '@/components/SettingsModal'
-import { ChevronLeft, Settings, ALargeSmall, AudioLines, Image, Volume2 } from 'lucide-react'
+import { ChevronLeft, Settings, ALargeSmall, AudioLines, Image, Volume2, PencilLine } from 'lucide-react'
 
 const modes = [
   { to: '/english/alphabet', icon: ALargeSmall, label: '알파벳', desc: 'A부터 Z까지 배워요', gradient: 'bg-gradient-to-br from-emerald-500 to-teal-600', iconColor: 'text-white' },
   { to: '/english/phonics', icon: AudioLines, label: '파닉스', desc: '소리와 글자의 관계', gradient: 'bg-gradient-to-br from-teal-500 to-cyan-600', iconColor: 'text-white' },
+  { to: '/english/writing', icon: PencilLine, label: '글씨 쓰기', desc: '대문자와 소문자를 따라 써요', gradient: 'bg-gradient-to-br from-emerald-500 to-green-600', iconColor: 'text-white' },
   { to: '/english/picture', icon: Image, label: '그림단어', desc: '그림을 보고 단어를 찾아요', gradient: 'bg-gradient-to-br from-green-500 to-emerald-600', iconColor: 'text-white' },
   { to: '/english/listen', icon: Volume2, label: '듣기', desc: '듣고 맞는 단어를 골라요', gradient: 'bg-gradient-to-br from-cyan-500 to-teal-600', iconColor: 'text-white' },
 ]

@@ -13,8 +13,10 @@ import Pattern from '@/routes/math/Pattern'
 import ClockReading from '@/routes/math/ClockReading'
 import Multiplication from '@/routes/math/Multiplication'
 import Subtraction from '@/routes/math/Subtraction'
+import NumberWriting from '@/routes/math/NumberWriting'
 import EnglishHome from '@/routes/english/EnglishHome'
 import Alphabet from '@/routes/english/Alphabet'
+import EnglishWriting from '@/routes/english/Writing'
 import PictureWord from '@/routes/english/PictureWord'
 import ListenWord from '@/routes/english/ListenWord'
 import KoreanHome from '@/routes/korean/KoreanHome'
@@ -75,8 +77,10 @@ function App() {
         <Route path="/math/pattern" element={<ProtectedRoute><Pattern /></ProtectedRoute>} />
         <Route path="/math/clock" element={<ProtectedRoute><ClockReading /></ProtectedRoute>} />
         <Route path="/math/multiplication" element={<ProtectedRoute><Multiplication /></ProtectedRoute>} />
+        <Route path="/math/number-writing" element={<ProtectedRoute><NumberWriting /></ProtectedRoute>} />
         <Route path="/english" element={<ProtectedRoute><EnglishHome /></ProtectedRoute>} />
         <Route path="/english/alphabet" element={<ProtectedRoute><Alphabet /></ProtectedRoute>} />
+        <Route path="/english/writing" element={<ProtectedRoute><EnglishWriting /></ProtectedRoute>} />
         <Route path="/english/picture" element={<ProtectedRoute><PictureWord /></ProtectedRoute>} />
         <Route path="/english/listen" element={<ProtectedRoute><ListenWord /></ProtectedRoute>} />
         <Route path="/korean" element={<ProtectedRoute><KoreanHome /></ProtectedRoute>} />
