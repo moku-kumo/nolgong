@@ -408,7 +408,7 @@ export default function Writing() {
     if (checkTimer.current) clearTimeout(checkTimer.current)
     checkTimer.current = setTimeout(() => {
       checkDrawingRef.current()
-    }, 1000)
+    }, 3000)
   }
 
   // 채점: 사용자가 그린 것과 목표 글자를 픽셀 비교
