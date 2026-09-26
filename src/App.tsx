@@ -33,6 +33,7 @@ import MazeFinder from '@/routes/game/MazeFinder'
 import Sewing from '@/routes/game/Sewing'
 import MemoryMatch from '@/routes/game/MemoryMatch'
 import Snake from '@/routes/game/Snake'
+import BlockBlast from '@/routes/game/BlockBlast'
 import ParentDashboard from '@/routes/ParentDashboard'
 import Phonics from '@/routes/english/Phonics'
 
@@ -97,6 +98,7 @@ function App() {
         <Route path="/game/sewing" element={<ProtectedRoute><Sewing /></ProtectedRoute>} />
         <Route path="/game/memory" element={<ProtectedRoute><MemoryMatch /></ProtectedRoute>} />
         <Route path="/game/snake" element={<ProtectedRoute><Snake /></ProtectedRoute>} />
+        <Route path="/game/block-blast" element={<ProtectedRoute><BlockBlast /></ProtectedRoute>} />
         <Route path="/parent" element={<ProtectedRoute><ParentDashboard /></ProtectedRoute>} />
         <Route path="/english/phonics" element={<ProtectedRoute><Phonics /></ProtectedRoute>} />
       </Routes>

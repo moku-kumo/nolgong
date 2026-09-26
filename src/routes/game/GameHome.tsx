@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, Lock, Clock, Unlock, Target, Bomb, Search, Navigation, Layers, Ribbon } from 'lucide-react'
+import { ChevronLeft, Lock, Clock, Unlock, Target, Bomb, Search, Navigation, Layers, Ribbon, Blocks } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStudyTimeStore, getTodaySeconds, isGameUnlocked, canPlayGame, getRemainingGameSeconds, isTimeLimitOff, getRequiredStudySeconds } from '@/stores/studyTimeStore'
 import SubjectCard from '@/components/SubjectCard'
@@ -13,8 +13,8 @@ const games = [
   { to: '/game/maze', icon: Navigation, label: '미로찾기', desc: '출구를 찾아요', gradient: 'bg-gradient-to-br from-cyan-400 to-blue-500', iconColor: 'text-white' },
   { to: '/game/memory', icon: Layers, label: '기억력 게임', desc: '같은 그림 카드 찾기', gradient: 'bg-gradient-to-br from-violet-400 to-purple-500', iconColor: 'text-white' },
   { to: '/game/snake', icon: Ribbon, label: '스네이크 게임', desc: '사과를 먹고 길어져요', gradient: 'bg-gradient-to-br from-green-400 to-emerald-500', iconColor: 'text-white' },
+  { to: '/game/block-blast', icon: Blocks, label: '블록 블라스트', desc: '블록을 놓고 줄을 지워요', gradient: 'bg-gradient-to-br from-cyan-500 to-emerald-500', iconColor: 'text-white' },
 ]
-
 export default function GameHome() {
   const todaySeconds = useStudyTimeStore(getTodaySeconds)
   const unlocked = useStudyTimeStore(isGameUnlocked)
